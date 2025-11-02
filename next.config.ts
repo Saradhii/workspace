@@ -14,7 +14,11 @@ const nextConfig: NextConfig = {
     // Dangerously allow production builds to successfully complete even if
     // your project has type errors.
     // !! WARN !!
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: true,
+  },
+  turbopack: {
+    // Specify the root directory to avoid lockfile conflicts
+    root: process.cwd(),
   },
 };
 

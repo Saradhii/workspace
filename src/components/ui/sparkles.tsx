@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 
 export const Sparkles = ({ count = 12 }: { count?: number }) => {
   const [sparkles, setSparkles] = React.useState<Array<{
