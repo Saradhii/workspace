@@ -20,7 +20,7 @@ export default function ImageCreation() {
   const [netaImage, setNetaImage] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [selectedModels, setSelectedModels] = useState<string[]>(["chroma", "neta-lumina"]);
+  const [selectedModels, setSelectedModels] = useState<string[]>(["chroma"]);
   const chatId = "image-creation-chat";
 
   // Get user session on mount
@@ -55,6 +55,8 @@ export default function ImageCreation() {
         user_id: userId,
       };
 
+      let errorMessage = null;
+
       if (selectedModels.length === 2) {
         // Generate both images using dual endpoint
         const result = await generateDualImage(params);
@@ -68,18 +70,23 @@ export default function ImageCreation() {
           } else if (result.chroma || result.neta_lumina) {
             toast.warning("One image generated successfully, one failed");
           } else {
-            throw new Error("Both image generations failed");
+            errorMessage = "Both image generations failed";
           }
 
           if (result.errors) {
             console.error("Generation errors:", result.errors);
+            // Show specific error if both failed
+            if (!result.chroma && !result.neta_lumina && result.errors) {
+              const firstError = Object.values(result.errors)[0];
+              errorMessage = firstError || "Both image generations failed";
+            }
           }
         } else {
-          throw new Error("Failed to generate images");
+          errorMessage = "Failed to generate images";
         }
       } else {
         // Generate single image
-        const modelName = selectedModels[0] as 'chroma' | 'neta-lumina';
+        const modelName = selectedModels[0];
         const result = await generateImage({
           ...params,
           model: modelName,
@@ -91,16 +98,24 @@ export default function ImageCreation() {
           } else {
             setNetaImage(result.image_url || result.image_base64);
           }
-          toast.success(`${modelName === 'chroma' ? 'Chroma' : 'Neta-Lumina'} image generated successfully!`);
+          toast.success(`${modelName === 'chroma' ? 'Chroma' : 'FLUX.1 Dev'} image generated successfully!`);
         } else {
-          throw new Error(`Failed to generate ${modelName} image`);
+          // Use the error from the API response if available
+          errorMessage = result.error || `Failed to generate ${modelName} image`;
         }
+      }
+
+      // If there's an error, display it
+      if (errorMessage) {
+        setError(errorMessage);
+        toast.error(errorMessage);
+        setStatus("error");
       }
     } catch (error) {
       console.error("Error generating images:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to generate images";
-      setError(errorMessage);
-      toast.error(errorMessage);
+      const caughtErrorMessage = error instanceof Error ? error.message : "Failed to generate images";
+      setError(caughtErrorMessage);
+      toast.error(caughtErrorMessage);
       setStatus("error");
     } finally {
       setIsGenerating(false);
@@ -129,6 +144,8 @@ export default function ImageCreation() {
           user_id: userId,
         };
 
+        let errorMessage = null;
+
         if (selectedModels.length === 2) {
           // Generate both images using dual endpoint
           const result = await generateDualImage(params);
@@ -142,18 +159,23 @@ export default function ImageCreation() {
             } else if (result.chroma || result.neta_lumina) {
               toast.warning("One image generated successfully, one failed");
             } else {
-              throw new Error("Both image generations failed");
+              errorMessage = "Both image generations failed";
             }
 
             if (result.errors) {
               console.error("Generation errors:", result.errors);
+              // Show specific error if both failed
+              if (!result.chroma && !result.neta_lumina && result.errors) {
+                const firstError = Object.values(result.errors)[0];
+                errorMessage = firstError || "Both image generations failed";
+              }
             }
           } else {
-            throw new Error("Failed to generate images");
+            errorMessage = "Failed to generate images";
           }
         } else {
           // Generate single image
-          const modelName = selectedModels[0] as 'chroma' | 'neta-lumina';
+          const modelName = selectedModels[0];
           const result = await generateImage({
             ...params,
             model: modelName,
@@ -165,16 +187,24 @@ export default function ImageCreation() {
             } else {
               setNetaImage(result.image_url || result.image_base64);
             }
-            toast.success(`${modelName === 'chroma' ? 'Chroma' : 'Neta-Lumina'} image generated successfully!`);
+            toast.success(`${modelName === 'chroma' ? 'Chroma' : 'FLUX.1 Dev'} image generated successfully!`);
           } else {
-            throw new Error(`Failed to generate ${modelName} image`);
+            // Use the error from the API response if available
+            errorMessage = result.error || `Failed to generate ${modelName} image`;
           }
+        }
+
+        // If there's an error, display it
+        if (errorMessage) {
+          setError(errorMessage);
+          toast.error(errorMessage);
+          setStatus("error");
         }
       } catch (error) {
         console.error("Error generating images:", error);
-        const errorMessage = error instanceof Error ? error.message : "Failed to generate images";
-        setError(errorMessage);
-        toast.error(errorMessage);
+        const caughtErrorMessage = error instanceof Error ? error.message : "Failed to generate images";
+        setError(caughtErrorMessage);
+        toast.error(caughtErrorMessage);
         setStatus("error");
       } finally {
         setIsGenerating(false);
@@ -212,10 +242,10 @@ export default function ImageCreation() {
                     <p className="text-sm text-muted-foreground mt-2">Chroma</p>
                   </div>
                 )}
-                {selectedModels.includes("neta-lumina") && (
+                {selectedModels.includes("FLUX.1 [dev]") && (
                   <div className="flex flex-col gap-2 items-center">
-                    <ImageLoadingCard colorTheme="neta-lumina" />
-                    <p className="text-sm text-muted-foreground mt-2">Neta-Lumina</p>
+                    <ImageLoadingCard colorTheme="flux" />
+                    <p className="text-sm text-muted-foreground mt-2">FLUX.1 Dev</p>
                   </div>
                 )}
               </div>
@@ -300,7 +330,7 @@ export default function ImageCreation() {
                     Create Your First Images
                   </h3>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Enter a prompt below to generate images with both Chroma and Neta-Lumina models
+                    Enter a prompt below to generate images with both Chroma and FLUX.1 Dev models
                   </p>
                 </div>
               </div>

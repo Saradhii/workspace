@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CpuIcon, ChevronDownIcon } from "./icons";
+import { CpuIcon, ChevronDownIcon, Brain } from "lucide-react";
 
 export interface ImageModel {
   id: string;
@@ -18,6 +18,8 @@ export interface ImageModel {
   displayName: string;
   description: string;
   color: string;
+  provider?: string;
+  supports_reasoning?: boolean;
 }
 
 export const imageModels: ImageModel[] = [
@@ -27,13 +29,6 @@ export const imageModels: ImageModel[] = [
     displayName: "Chroma",
     description: "Fast and efficient image generation",
     color: "text-pink-500",
-  },
-  {
-    id: "neta-lumina",
-    name: "neta-lumina",
-    displayName: "Neta-Lumina",
-    description: "High-quality detailed image generation",
-    color: "text-emerald-500",
   },
 ];
 
@@ -136,7 +131,14 @@ export function ModelSelectorModal({
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center gap-2"
                   >
                     <span className={model.color}>{model.displayName}</span>
-                    <span className="text-xs text-muted-foreground">({model.name})</span>
+                    {model.provider && (
+                      <span className="text-xs px-2 py-0.5 bg-muted rounded-full">
+                        {model.provider}
+                      </span>
+                    )}
+                    {model.supports_reasoning && (
+                      <Brain className="h-3 w-3 text-purple-500" title="Supports reasoning" />
+                    )}
                   </label>
                   <p className="text-xs text-muted-foreground">
                     {model.description}

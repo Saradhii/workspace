@@ -9,18 +9,23 @@ import {
   VideoGenerationStreamEvent,
   VideoModel,
   VideoUploadRequest,
-  VideoUploadResponse
+  VideoUploadResponse,
+  TextGenerationRequest,
+  TextGenerationResponse,
+  TextStreamEvent
 } from '@/types/api';
 
 export class ChutesService {
   private apiKey: string;
   private imageApiUrl: string;
   private videoApiUrl: string;
+  private textApiUrl: string;
 
   constructor() {
     this.apiKey = process.env.CHUTES_API_KEY || '';
     this.imageApiUrl = process.env.CHUTES_IMAGE_API_URL || 'https://image.chutes.ai';
     this.videoApiUrl = process.env.CHUTES_VIDEO_API_URL || 'https://chutes-wan-2-2-i2v-14b-fast.chutes.ai';
+    this.textApiUrl = process.env.CHUTES_API_BASE_URL || 'https://llm.chutes.ai/v1';
   }
 
   private getHeaders(): HeadersInit {
@@ -53,7 +58,20 @@ export class ChutesService {
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || error.detail || `Image generation failed: ${response.statusText}`);
+        let errorMessage = `Image generation failed: ${response.statusText}`;
+
+        // Handle nested error structure
+        if (error.detail) {
+          if (typeof error.detail === 'string') {
+            errorMessage = error.detail;
+          } else if (error.detail.message) {
+            errorMessage = error.detail.message;
+          }
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -95,21 +113,21 @@ export class ChutesService {
     const startTime = Date.now();
 
     // Generate with both models in parallel
-    const [chromaResult, netaLuminaResult] = await Promise.all([
+    const [chromaResult, fluxResult] = await Promise.all([
       this.generateImage({ ...params, model: 'chroma' }),
-      this.generateImage({ ...params, model: 'neta-lumina' }),
+      this.generateImage({ ...params, model: 'FLUX.1 [dev]' }),
     ]);
 
     const totalTime = Date.now() - startTime;
 
     const errors: Record<string, string> = {};
     if (!chromaResult.success) errors.chroma = chromaResult.error || 'Failed to generate';
-    if (!netaLuminaResult.success) errors.neta_lumina = netaLuminaResult.error || 'Failed to generate';
+    if (!fluxResult.success) errors.flux = fluxResult.error || 'Failed to generate';
 
     return {
-      success: chromaResult.success || netaLuminaResult.success,
+      success: chromaResult.success || fluxResult.success,
       chroma: chromaResult.success ? chromaResult : undefined,
-      neta_lumina: netaLuminaResult.success ? netaLuminaResult : undefined,
+      neta_lumina: fluxResult.success ? { ...fluxResult, model_used: 'FLUX.1 [dev]' } : undefined,
       total_generation_time_ms: totalTime,
       request_id: `dual-${Date.now()}`,
       errors: Object.keys(errors).length > 0 ? errors : undefined,
@@ -190,7 +208,20 @@ export class ChutesService {
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `Upload failed: ${response.statusText}`);
+        let errorMessage = `Upload failed: ${response.statusText}`;
+
+        // Handle nested error structure
+        if (error.detail) {
+          if (typeof error.detail === 'string') {
+            errorMessage = error.detail;
+          } else if (error.detail.message) {
+            errorMessage = error.detail.message;
+          }
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -237,11 +268,17 @@ export class ChutesService {
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        let errorMessage = error.message || error.detail || `Video generation failed: ${response.statusText}`;
+        let errorMessage = `Video generation failed: ${response.statusText}`;
 
         // Handle nested error structure
-        if (error.detail && typeof error.detail === 'object' && error.detail.message) {
-          errorMessage = error.detail.message;
+        if (error.detail) {
+          if (typeof error.detail === 'string') {
+            errorMessage = error.detail;
+          } else if (error.detail.message) {
+            errorMessage = error.detail.message;
+          }
+        } else if (error.message) {
+          errorMessage = error.message;
         }
 
         throw new Error(errorMessage);
@@ -349,6 +386,7 @@ export class ChutesService {
   // Model Information Methods
   async getImageModels(): Promise<ImageModel[]> {
     // Return hardcoded models since Chutes doesn't have a models endpoint
+    // Note: Currently only 'chroma' model is available on Chutes AI
     return [
       {
         name: 'chroma',
@@ -358,15 +396,6 @@ export class ChutesService {
         max_height: 2048,
         supported_formats: ['jpeg', 'png'],
         features: ['text-to-image', 'fast-generation'],
-      },
-      {
-        name: 'neta-lumina',
-        display_name: 'Neta Lumina',
-        description: 'High-quality artistic image generation model',
-        max_width: 1024,
-        max_height: 1024,
-        supported_formats: ['jpeg', 'png'],
-        features: ['text-to-image', 'artistic-style', 'high-quality'],
       },
     ];
   }
@@ -385,6 +414,188 @@ export class ChutesService {
         avg_generation_time: '30-60 seconds',
       },
     ];
+  }
+
+  // Text Generation Methods
+  async generateText(params: TextGenerationRequest): Promise<TextGenerationResponse> {
+    const response = await fetch(`${this.textApiUrl}/chat/completions`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({
+        model: params.model,
+        messages: params.messages,
+        temperature: params.temperature || 0.7,
+        max_tokens: params.max_tokens || 1024,
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      let errorMessage = `Text generation failed: ${response.statusText}`;
+
+      // Handle nested error structure
+      if (error.detail) {
+        if (typeof error.detail === 'string') {
+          errorMessage = error.detail;
+        } else if (error.detail.message) {
+          errorMessage = error.detail.message;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+    const choice = data.choices?.[0];
+
+    return {
+      success: true,
+      content: choice?.message?.content || '',
+      model: params.model || 'Alibaba-NLP/Tongyi-DeepResearch-30B-A3B',
+      usage: {
+        prompt_tokens: data.usage?.prompt_tokens || 0,
+        completion_tokens: data.usage?.completion_tokens || 0,
+        total_tokens: data.usage?.total_tokens || 0,
+      },
+      finish_reason: choice?.finish_reason || 'stop',
+    };
+  }
+
+  async* streamText(params: TextGenerationRequest): AsyncGenerator<TextStreamEvent> {
+    const response = await fetch(`${this.textApiUrl}/chat/completions`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({
+        model: params.model,
+        messages: params.messages,
+        temperature: params.temperature || 0.7,
+        max_tokens: params.max_tokens || 1024,
+        stream: true,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      let errorMessage = `Text generation failed: ${response.statusText}`;
+
+      // Handle nested error structure
+      if (error.detail) {
+        if (typeof error.detail === 'string') {
+          errorMessage = error.detail;
+        } else if (error.detail.message) {
+          errorMessage = error.detail.message;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    let accumulatedContent = '';
+    let accumulatedReasoning = '';
+    let isInThinking = false;
+    let thinkingBuffer = '';
+
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+
+    if (!reader) {
+      throw new Error('No response body');
+    }
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+
+            if (data === '[DONE]') {
+              yield {
+                type: 'done',
+                content: accumulatedContent,
+                accumulated: accumulatedContent,
+                ...(accumulatedReasoning && { reasoning: accumulatedReasoning }),
+                model: params.model || 'Alibaba-NLP/Tongyi-DeepResearch-30B-A3B',
+              };
+              return;
+            }
+
+            try {
+              const parsed = JSON.parse(data);
+              const delta = parsed.choices?.[0]?.delta;
+
+              if (delta?.content) {
+                const content = delta.content;
+
+                // Handle thinking tokens
+                // Check for common thinking markers
+                if (content.includes('<thinking>')) {
+                  isInThinking = true;
+                  const parts = content.split('<thinking>');
+                  if (parts[0]) {
+                    accumulatedContent += parts[0];
+                  }
+                  thinkingBuffer = parts[1] || '';
+                } else if (content.includes('</thinking>')) {
+                  isInThinking = false;
+                  const parts = content.split('</thinking>');
+                  if (parts[0]) {
+                    thinkingBuffer += parts[0];
+                  }
+                  accumulatedReasoning += thinkingBuffer;
+                  thinkingBuffer = '';
+                  if (parts[1]) {
+                    accumulatedContent += parts[1];
+                  }
+                } else if (isInThinking) {
+                  thinkingBuffer += content;
+                  // Yield reasoning event
+                  yield {
+                    type: 'reasoning',
+                    content: content,
+                    accumulated: accumulatedReasoning + thinkingBuffer,
+                  };
+                } else {
+                  accumulatedContent += content;
+                  // Yield content event
+                  yield {
+                    type: 'content',
+                    content: content,
+                    accumulated: accumulatedContent,
+                  };
+                }
+              }
+
+              // Yield usage info if available
+              if (parsed.usage) {
+                yield {
+                  type: 'usage',
+                  usage: {
+                    prompt_tokens: parsed.usage.prompt_tokens || 0,
+                    completion_tokens: parsed.usage.completion_tokens || 0,
+                    total_tokens: parsed.usage.total_tokens || 0,
+                  },
+                };
+              }
+            } catch (e) {
+              // Ignore JSON parse errors for streaming chunks
+            }
+          }
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
   }
 }
 

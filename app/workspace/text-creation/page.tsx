@@ -27,7 +27,7 @@ export default function TextCreation() {
   const [generatedText, setGeneratedText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [selectedModelId, setSelectedModelId] = useState("meta-llama/llama-3.2-3b-instruct:free");
+  const [selectedModelId, setSelectedModelId] = useState("chutes:openai/gpt-oss-20b");
   const [availableModels, setAvailableModels] = useState<any[]>([]);
   const chatId = "text-creation-chat";
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -51,7 +51,7 @@ export default function TextCreation() {
           const formattedModels = modelsResponse.models.map((model) => ({
             id: model.id,
             name: model.name,
-            displayName: model.display_name,
+            displayName: model.displayName || model.display_name,
             description: model.description,
             color: "text-blue-500", // Default color
           }));
@@ -72,6 +72,19 @@ export default function TextCreation() {
 
     loadData();
   }, []);
+
+  // Sync selected model when available models change
+  useEffect(() => {
+    if (availableModels.length > 0) {
+      // Check if current selectedModelId exists in availableModels
+      const modelExists = availableModels.some(model => model.id === selectedModelId);
+
+      // If not, select the first available model
+      if (!modelExists && availableModels.length > 0) {
+        setSelectedModelId(availableModels[0].id);
+      }
+    }
+  }, [availableModels, selectedModelId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -433,7 +446,7 @@ export default function TextCreation() {
         </div>
 
         {/* Fixed Input Section */}
-        <div className="max-w-3xl mx-auto p-4 w-full min-w-0">
+        <div className="mx-auto p-4 w-full min-w-0" style={{ maxWidth: '635px' }}>
           <TextMultimodalInput
             chatId={chatId}
             input={input}

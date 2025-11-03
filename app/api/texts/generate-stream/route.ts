@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { openRouterService } from '@/lib/ai/openrouter';
+import { chutesService } from '@/lib/ai/chutes';
 import { TextGenerationRequest } from '@/types/api';
 
 export async function POST(request: NextRequest) {
@@ -14,7 +15,22 @@ export async function POST(request: NextRequest) {
       stream: true,
     };
 
-    const stream = openRouterService.streamText(params);
+    // Check provider and route to appropriate service
+    const isChutesModel = params.model?.startsWith('chutes:');
+    let stream;
+
+    if (isChutesModel) {
+      // Remove 'chutes:' prefix for API call
+      const chutesModelId = params.model.replace('chutes:', '');
+      stream = chutesService.streamText({
+        ...params,
+        model: chutesModelId,
+      });
+    } else {
+      // Use OpenRouter
+      stream = openRouterService.streamText(params);
+    }
+
     const encoder = new TextEncoder();
 
     const streamResponse = new ReadableStream({

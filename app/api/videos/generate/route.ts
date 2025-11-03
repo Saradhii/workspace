@@ -30,10 +30,23 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Video generation error:', error);
 
+    // Extract error message safely
+    let errorMessage = 'Internal server error';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'object' && error !== null) {
+      // Handle cases where error might be an object
+      errorMessage = JSON.stringify(error);
+      // If it's too long or just looks like [object Object], provide a generic message
+      if (errorMessage === '{}' || errorMessage === '[object Object]') {
+        errorMessage = 'An unknown error occurred during video generation';
+      }
+    }
+
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
+        error: errorMessage,
         error_type: 'server_error',
         video_id: `error-${Date.now()}`,
         format: 'mp4',

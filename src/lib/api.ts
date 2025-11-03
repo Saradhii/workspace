@@ -293,7 +293,15 @@ export async function generateImage(params: ImageGenerationRequest): Promise<Ima
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `Image generation failed: ${response.statusText}`);
+      // Check multiple possible error fields
+      let errorMessage = errorData.error || errorData.detail || `Image generation failed: ${response.statusText}`;
+
+      // If errorData is a response from our backend, it will have an error field
+      if (typeof errorMessage === 'object' && errorMessage !== null) {
+        errorMessage = errorMessage.message || JSON.stringify(errorMessage);
+      }
+
+      throw new Error(errorMessage);
     }
 
     return await response.json();
@@ -351,7 +359,15 @@ export async function generateDualImage(params: ImageGenerationRequest): Promise
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `Dual image generation failed: ${response.statusText}`);
+      // Check multiple possible error fields
+      let errorMessage = errorData.error || errorData.detail || `Dual image generation failed: ${response.statusText}`;
+
+      // If errorData is a response from our backend, it will have an error field
+      if (typeof errorMessage === 'object' && errorMessage !== null) {
+        errorMessage = errorMessage.message || JSON.stringify(errorMessage);
+      }
+
+      throw new Error(errorMessage);
     }
 
     return await response.json();

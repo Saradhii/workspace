@@ -11,6 +11,7 @@ import {
   IconPhoto,
   IconVideo,
   IconMessage,
+  IconDatabase,
 } from "@tabler/icons-react";
 import { usePathname } from "next/navigation";
 
@@ -48,6 +49,11 @@ import { Code } from "lucide-react";
       label: "Code Generation",
       href: "/workspace/code-creation",
       icon: <Code className="h-5 w-5" />,
+    },
+    {
+      label: "RAG",
+      href: "/workspace/rag",
+      icon: <IconDatabase className="h-5 w-5" />,
     },
     {
       label: "Dashboard",

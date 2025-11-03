@@ -333,28 +333,62 @@ export class OpenRouterService {
 
       const data = await response.json();
 
+      // Only keep the best Llama model from OpenRouter
+      const bestModels = [
+        'meta-llama/llama-3.3-70b-instruct:free', // Best Llama model
+      ];
+
       // Filter and map to our format
       const textModels: TextModel[] = data.data
-        .filter((model: any) =>
-          model.id.includes('llama') ||
-          model.id.includes('gpt') ||
-          model.id.includes('claude') ||
-          model.id.includes('gemini')
-        )
+        .filter((model: any) => bestModels.includes(model.id))
         .map((model: any): TextModel => ({
           id: model.id,
           name: model.name || model.id,
           display_name: model.name || model.id.split('/').pop() || model.id,
-          description: model.description || 'Text generation model',
-          provider: model.id.split('/')[0] || 'unknown',
+          description: 'Large language model for text generation',
+          provider: 'OpenRouter',
           context_length: model.context_length || 4096,
           supports_reasoning: model.id.includes('reasoning') || false,
         }));
 
+      // Add Chutes AI models
+      const chutesModels: TextModel[] = [
+        {
+          id: 'chutes:Alibaba-NLP/Tongyi-DeepResearch-30B-A3B',
+          name: 'Tongyi DeepResearch 30B',
+          display_name: 'Tongyi DeepResearch 30B',
+          description: 'Advanced reasoning model with thinking capabilities',
+          provider: 'Chutes AI',
+          context_length: 8192,
+          supports_reasoning: true,
+        },
+        {
+          id: 'chutes:openai/gpt-oss-20b',
+          name: 'GPT-OSS 20B',
+          display_name: 'GPT-OSS 20B',
+          description: 'Open source GPT model with reasoning support',
+          provider: 'Chutes AI',
+          context_length: 4096,
+          supports_reasoning: true,
+        },
+        {
+          id: 'chutes:unsloth/gemma-3-4b-it',
+          name: 'Gemma 3 4B IT',
+          display_name: 'Gemma 3 4B IT',
+          description: 'Efficient instruction-tuned model',
+          provider: 'Chutes AI',
+          context_length: 8192,
+          supports_reasoning: false,
+        },
+      ];
+
+      // Combine both providers
+      const allModels = [...textModels, ...chutesModels];
+
       return {
         success: true,
-        models: textModels,
-        count: textModels.length,
+        models: allModels,
+        count: allModels.length,
       };
     } catch (error) {
       return {

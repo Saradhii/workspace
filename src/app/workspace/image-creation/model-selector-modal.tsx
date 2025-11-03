@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -12,13 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CpuIcon, ChevronDownIcon } from "./icons";
 
-export interface ImageModel {
-  id: string;
-  name: string;
-  displayName: string;
-  description: string;
-  color: string;
-}
+// Import ImageModel from shared types
+import type { ImageModel } from "@/types/models";
 
 export const imageModels: ImageModel[] = [
   {
@@ -26,6 +22,7 @@ export const imageModels: ImageModel[] = [
     name: "chroma",
     displayName: "Chroma",
     description: "Fast and efficient image generation",
+    provider: "Internal",
     color: "text-pink-500",
   },
   {
@@ -33,7 +30,44 @@ export const imageModels: ImageModel[] = [
     name: "neta-lumina",
     displayName: "Neta-Lumina",
     description: "High-quality detailed image generation",
+    provider: "Internal",
     color: "text-emerald-500",
+  },
+];
+
+// Text generation models (static, like image models)
+export const textModels: ImageModel[] = [
+  {
+    id: "meta-llama/llama-3.3-70b-instruct:free",
+    name: "llama-3.3-70b-instruct",
+    displayName: "Llama 3.3 70B",
+    description: "Large language model for text generation",
+    provider: "OpenRouter",
+    color: "text-blue-500",
+  },
+  {
+    id: "chutes:Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+    name: "Tongyi DeepResearch 30B",
+    displayName: "Tongyi DeepResearch 30B",
+    description: "Advanced reasoning model with thinking capabilities",
+    provider: "Chutes AI",
+    color: "text-purple-500",
+  },
+  {
+    id: "chutes:openai/gpt-oss-20b",
+    name: "GPT-OSS 20B",
+    displayName: "GPT-OSS 20B",
+    description: "Open source GPT model with reasoning support",
+    provider: "Chutes AI",
+    color: "text-green-500",
+  },
+  {
+    id: "chutes:unsloth/gemma-3-4b-it",
+    name: "Gemma 3 4B IT",
+    displayName: "Gemma 3 4B IT",
+    description: "Efficient instruction-tuned model",
+    provider: "Chutes AI",
+    color: "text-orange-500",
   },
 ];
 
@@ -116,6 +150,9 @@ export function ModelSelectorModal({
             <CpuIcon size={20} />
             {title}
           </DialogTitle>
+          <DialogDescription>
+            Select a model to use for content generation
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

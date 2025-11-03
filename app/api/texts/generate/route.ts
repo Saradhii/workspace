@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { openRouterService } from '@/lib/ai/openrouter';
+import { chutesService } from '@/lib/ai/chutes';
 import { TextGenerationRequest } from '@/types/api';
 
 export async function POST(request: NextRequest) {
@@ -13,12 +14,26 @@ export async function POST(request: NextRequest) {
       user_id: body.user_id,
     };
 
-    const result = await openRouterService.generateText(params);
+    // Check provider and route to appropriate service
+    const isChutesModel = params.model?.startsWith('chutes:');
+    let result;
+
+    if (isChutesModel) {
+      // Remove 'chutes:' prefix for API call
+      const chutesModelId = params.model.replace('chutes:', '');
+      result = await chutesService.generateText({
+        ...params,
+        model: chutesModelId,
+      });
+    } else {
+      // Use OpenRouter
+      result = await openRouterService.generateText(params);
+    }
 
     // Log for analytics (if needed)
     if (process.env.NODE_ENV === 'production' && params.user_id) {
       // Could add analytics logging here
-      console.log(`Text generation request for user ${params.user_id} with model ${params.model}`);
+      console.log(`Text generation request for user ${params.user_id} with model ${params.model} (${isChutesModel ? 'Chutes AI' : 'OpenRouter'})`);
     }
 
     return NextResponse.json(result);

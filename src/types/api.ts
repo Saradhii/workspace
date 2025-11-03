@@ -134,15 +134,11 @@ export interface TextStreamEvent {
   error?: string;
 }
 
-export interface TextModel {
-  id: string;
-  name: string;
-  display_name: string;
-  description: string;
-  provider: string;
-  context_length: number;
-  supports_reasoning?: boolean;
-}
+// Import model interfaces from the common models file
+import type { TextModel, CodeModel } from '@/types/models';
+
+// Re-export for backward compatibility
+export type { TextModel, CodeModel } from '@/types/models';
 
 export interface TextModelsResponse {
   success: boolean;
@@ -366,17 +362,6 @@ export interface CodeStreamEvent {
   content?: string;
   request_id?: string;
   error?: string;
-}
-
-export interface CodeModel {
-  id: string;
-  name: string;
-  display_name: string;
-  description: string;
-  provider: string;
-  context_length: number;
-  specialty?: string;
-  supports_reasoning?: boolean;
 }
 
 export interface CodeModelsResponse {

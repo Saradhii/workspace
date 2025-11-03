@@ -35,15 +35,9 @@ export interface TextMessage {
   reasoning?: string;
 }
 
-export interface TextModel {
-  id: string;
-  name: string;
-  display_name: string;
-  description: string;
-  provider: string;
-  context_length: number;
-  supports_reasoning?: boolean;
-}
+// Import TextModel, CodeModel, and ImageModel from their respective files to avoid duplication
+export type { TextModel, CodeModel } from '@/types/api';
+export type { ImageModel } from '@/types/models';
 
 // Image generation types
 export interface GeneratedImage {
@@ -59,17 +53,6 @@ export interface GeneratedImage {
   created_at: string;
 }
 
-export interface ImageModel {
-  id: string;
-  name: string;
-  display_name: string;
-  description: string;
-  max_width: number;
-  max_height: number;
-  supported_formats: string[];
-  features: string[];
-  color?: string; // For UI display
-}
 
 export interface ImageGenerationParams {
   prompt: string;
@@ -117,16 +100,8 @@ export interface CodeMessage {
   timestamp: Date;
 }
 
-export interface CodeModel {
-  id: string;
-  name: string;
-  display_name: string;
-  description: string;
-  provider: string;
-  context_length: number;
-  specialty?: string;
-  supports_reasoning?: boolean;
-}
+// Import CodeModel from api.ts to avoid duplication
+export type { CodeModel } from '@/types/api';
 
 // Component Props Interfaces
 export interface MultimodalInputProps {

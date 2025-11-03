@@ -103,13 +103,7 @@ function PureTextMultimodalInput({
             <ModelSelectorModal
               selectedModels={[selectedModelId ?? ""]}
               onSelectionChange={(models) => onModelChange?.(models[0] ?? "")}
-              models={models.map(m => ({
-                id: m.id,
-                name: m.name,
-                displayName: m.display_name,
-                description: m.description,
-                color: "text-blue-500"
-              }))}
+              models={models}
               title="Select Text Generation Model"
             />
           </PromptInputTools>
