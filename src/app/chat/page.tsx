@@ -129,7 +129,7 @@ export default function ChatPage() {
           if (controller.signal.aborted) return;
 
           if (chunk.type === 'sources') {
-            sources = chunk.sources.map((s: any) => ({
+            sources = (chunk.sources || []).map((s: any) => ({
               content: s.content,
               metadata: s.metadata
             }));

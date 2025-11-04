@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     if (isChutesModel) {
       // Remove 'chutes:' prefix for API call
-      const chutesModelId = params.model.replace('chutes:', '');
+      const chutesModelId = (params.model || '').replace('chutes:', '');
       stream = chutesService.streamText({
         ...params,
         model: chutesModelId,

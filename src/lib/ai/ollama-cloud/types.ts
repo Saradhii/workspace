@@ -226,10 +226,22 @@ export interface ModelsResponse {
 // Error Types
 // =================================
 
-export interface OllamaError {
+export interface OllamaErrorData {
   error: string;
   type?: string;
   code?: string;
+}
+
+export class OllamaError extends Error {
+  public readonly type?: string;
+  public readonly code?: string;
+
+  constructor(data: OllamaErrorData) {
+    super(data.error);
+    this.name = 'OllamaError';
+    this.type = data.type;
+    this.code = data.code;
+  }
 }
 
 // =================================

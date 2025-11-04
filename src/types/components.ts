@@ -36,8 +36,7 @@ export interface TextMessage {
 }
 
 // Import TextModel, CodeModel, and ImageModel from their respective files to avoid duplication
-export type { TextModel, CodeModel } from '@/types/api';
-export type { ImageModel } from '@/types/models';
+export type { TextModel, CodeModel, ImageModel } from '@/types/models';
 
 // Image generation types
 export interface GeneratedImage {
@@ -62,7 +61,7 @@ export interface ImageGenerationParams {
   steps?: number;
   cfg?: number;
   seed?: number;
-  model?: 'chroma' | 'neta-lumina';
+  model?: 'chroma' | 'neta-lumina' | 'flux';
 }
 
 // Video generation types
@@ -100,8 +99,6 @@ export interface CodeMessage {
   timestamp: Date;
 }
 
-// Import CodeModel from api.ts to avoid duplication
-export type { CodeModel } from '@/types/api';
 
 // Component Props Interfaces
 export interface MultimodalInputProps {
@@ -125,7 +122,7 @@ export interface MultimodalInputProps {
   setVideoParams?: Dispatch<SetStateAction<VideoParams>>;
 }
 
-export interface TextMultimodalInputProps extends MultimodalInputProps {
+export interface TextMultimodalInputProps extends Omit<MultimodalInputProps, 'messages' | 'setMessages'> {
   messages: TextMessage[];
   setMessages: Dispatch<SetStateAction<TextMessage[]>>;
   actualMessagesCount?: number;
@@ -137,7 +134,7 @@ export interface ImageMultimodalInputProps extends MultimodalInputProps {
   setAttachments: Dispatch<SetStateAction<Attachment[]>>;
 }
 
-export interface VideoMultimodalInputProps extends MultimodalInputProps {
+export interface VideoMultimodalInputProps extends Omit<MultimodalInputProps, 'messages' | 'setMessages' | 'chatId' | 'videoParams' | 'setVideoParams'> {
   chatId: string;
   attachments: Attachment[];
   setAttachments: Dispatch<SetStateAction<Attachment[]>>;
@@ -147,7 +144,7 @@ export interface VideoMultimodalInputProps extends MultimodalInputProps {
   setVideoParams: Dispatch<SetStateAction<VideoParams>>;
 }
 
-export interface CodeMultimodalInputProps extends MultimodalInputProps {
+export interface CodeMultimodalInputProps extends Omit<MultimodalInputProps, 'messages' | 'setMessages'> {
   messages: CodeMessage[];
   setMessages: Dispatch<SetStateAction<CodeMessage[]>>;
   models: CodeModel[];

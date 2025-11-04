@@ -152,7 +152,7 @@ export function validateEnvVariables(): {
   }
 
   return {
-    RAG_API_URL: process.env.RAG_API_URL,
+    RAG_API_URL: process.env.RAG_API_URL || undefined,
     isValid: errors.length === 0,
     errors
   };

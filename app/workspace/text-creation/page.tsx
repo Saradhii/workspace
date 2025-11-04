@@ -51,7 +51,7 @@ export default function TextCreation() {
           const formattedModels = modelsResponse.models.map((model) => ({
             id: model.id,
             name: model.name,
-            displayName: model.displayName || model.display_name,
+            displayName: model.displayName,
             description: model.description,
             color: "text-blue-500", // Default color
           }));

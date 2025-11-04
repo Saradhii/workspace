@@ -56,7 +56,7 @@ export default function CodeCreation() {
         setAvailableModels([{
           id: "zai-org/GLM-4.5-Air",
           name: "glm-4.5-air",
-          display_name: "ZLM 4.5 Air",
+          displayName: "ZLM 4.5 Air",
           description: "Advanced coding assistant with excellent code generation capabilities",
           provider: "Zhipu AI",
           context_length: 128000,

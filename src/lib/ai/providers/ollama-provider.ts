@@ -171,14 +171,14 @@ export class OllamaProvider extends BaseAIProvider {
       case 'tool_call':
         return {
           type: 'tool_call',
-          tool_calls: event.tool_calls,
+          tool_calls: event.tool_calls || undefined,
         };
 
       case 'complete':
         return {
           type: 'done',
           content: event.content || '',
-          accumulated: event.content,
+          accumulated: event.content || undefined,
           usage: event.metrics ? {
             prompt_tokens: event.metrics.prompt_eval_count,
             completion_tokens: event.metrics.eval_count,
@@ -189,7 +189,7 @@ export class OllamaProvider extends BaseAIProvider {
       case 'error':
         return {
           type: 'error',
-          error: event.error,
+          error: event.error || undefined,
         };
 
       default:

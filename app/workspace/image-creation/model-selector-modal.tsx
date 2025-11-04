@@ -137,7 +137,7 @@ export function ModelSelectorModal({
                       </span>
                     )}
                     {model.supports_reasoning && (
-                      <Brain className="h-3 w-3 text-purple-500" title="Supports reasoning" />
+                      <Brain className="h-3 w-3 text-purple-500" />
                     )}
                   </label>
                   <p className="text-xs text-muted-foreground">
