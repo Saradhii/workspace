@@ -227,10 +227,11 @@ class AIManager {
         models: models.map(m => ({
           id: m.id,
           name: m.displayName,
+          displayName: m.displayName,
           description: m.description,
-          capabilities: m.capabilities,
-          context_window: m.contextWindow,
-          pricing: m.pricing,
+          provider: 'Ollama',
+          context_length: m.contextWindow || 4096,
+          supports_reasoning: m.capabilities?.thinking || false,
         })),
       };
     }
@@ -263,11 +264,12 @@ class AIManager {
         models: models.map(m => ({
           id: m.id,
           name: m.displayName,
+          displayName: m.displayName,
           description: m.description,
-          capabilities: m.capabilities,
-          context_window: m.contextWindow,
-          pricing: m.pricing,
-          language: 'multilang',
+          provider: 'Ollama',
+          context_length: m.contextWindow || 4096,
+          specialty: 'code_generation',
+          supports_reasoning: m.capabilities?.thinking || false,
         })),
       };
     }
@@ -300,7 +302,7 @@ class AIManager {
     // Generic test for other providers
     try {
       await this.generateText({
-        prompt: 'Test',
+        messages: [{ role: 'user', content: 'Test' }],
         max_tokens: 5,
       });
       return true;
@@ -319,7 +321,7 @@ class AIManager {
     models?: number;
   }> {
     if (this.currentProvider === 'ollama') {
-      const status = await providerManager.getProvider('ollama');
+      const status = await providerManager.get('ollama');
       const ollamaStatus = await (status as any).getStatus?.();
       return {
         provider: this.currentProvider,
@@ -356,8 +358,7 @@ export const getAIProvider = () => aiManager.getProvider();
 export const testAIProvider = () => aiManager.test();
 export const getAIStatus = () => aiManager.getStatus();
 
-// Export types
-export type { AIProvider };
+// AIProvider type is already exported above
 
 // Re-export services for direct access if needed
 export { ollamaAIService, chutesService, providerManager };

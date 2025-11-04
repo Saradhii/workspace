@@ -115,7 +115,7 @@ export class ChutesService {
     // Generate with both models in parallel
     const [chromaResult, fluxResult] = await Promise.all([
       this.generateImage({ ...params, model: 'chroma' }),
-      this.generateImage({ ...params, model: 'FLUX.1 [dev]' }),
+      this.generateImage({ ...params, model: 'flux' }),
     ]);
 
     const totalTime = Date.now() - startTime;
@@ -454,7 +454,7 @@ export class ChutesService {
     return {
       success: true,
       content: choice?.message?.content || '',
-      model: params.model || 'Alibaba-NLP/Tongyi-DeepResearch-30B-A3B',
+      model_used: params.model || 'Alibaba-NLP/Tongyi-DeepResearch-30B-A3B',
       usage: {
         prompt_tokens: data.usage?.prompt_tokens || 0,
         completion_tokens: data.usage?.completion_tokens || 0,

@@ -36,7 +36,8 @@ export interface TextMessage {
 }
 
 // Import TextModel, CodeModel, and ImageModel from their respective files to avoid duplication
-export type { TextModel, CodeModel, ImageModel } from '@/types/models';
+import type { TextModel, CodeModel, ImageModel } from '@/types/models';
+export type { TextModel, CodeModel, ImageModel };
 
 // Image generation types
 export interface GeneratedImage {

@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { CanvasRevealEffect } from "@/components/ui/canvas-reveal-effect";
 
 interface ImageLoadingCardProps {
-  colorTheme?: "chroma" | "neta-lumina";
+  colorTheme?: "chroma" | "neta-lumina" | "flux";
 }
 
 export function ImageLoadingCard({ colorTheme = "chroma" }: ImageLoadingCardProps) {
@@ -16,16 +16,32 @@ export function ImageLoadingCard({ colorTheme = "chroma" }: ImageLoadingCardProp
         <div className="h-full w-full absolute inset-0">
           <CanvasRevealEffect
             animationSpeed={2}
-            containerClassName={colorTheme === "neta-lumina" ? "bg-gradient-to-br from-emerald-900 to-emerald-800 dark:from-gray-900 dark:to-emerald-900" : "bg-gradient-to-br from-gray-900 to-gray-800 dark:from-black dark:to-gray-900"}
-            colors={colorTheme === "neta-lumina" ? [
-              [16, 185, 129],  // Emerald-500
-              [5, 150, 105],   // Emerald-600
-              [4, 120, 87],    // Emerald-700
-            ] : [
-              [236, 72, 153],  // Pink
-              [232, 121, 249], // Purple
-              [139, 92, 246],  // Violet
-            ]}
+            containerClassName={
+              colorTheme === "neta-lumina"
+                ? "bg-gradient-to-br from-emerald-900 to-emerald-800 dark:from-gray-900 dark:to-emerald-900"
+                : colorTheme === "flux"
+                ? "bg-gradient-to-br from-blue-900 to-purple-900 dark:from-indigo-900 dark:to-purple-900"
+                : "bg-gradient-to-br from-gray-900 to-gray-800 dark:from-black dark:to-gray-900"
+            }
+            colors={
+              colorTheme === "neta-lumina"
+                ? [
+                    [16, 185, 129],  // Emerald-500
+                    [5, 150, 105],   // Emerald-600
+                    [4, 120, 87],    // Emerald-700
+                  ]
+                : colorTheme === "flux"
+                ? [
+                    [59, 130, 246],  // Blue-500
+                    [147, 51, 234],  // Purple-600
+                    [236, 72, 153],  // Pink-600
+                  ]
+                : [
+                    [236, 72, 153],  // Pink
+                    [232, 121, 249], // Purple
+                    [139, 92, 246],  // Violet
+                  ]
+            }
             dotSize={2}
             showGradient={true}
           />

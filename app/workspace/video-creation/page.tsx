@@ -191,12 +191,12 @@ export default function VideoCreation() {
                 <VideoResultCard
                   videoId={generatedVideo.video_id}
                   userId={userId!}
-                  videoUrl={generatedVideo.video_url}
-                  videoBase64={generatedVideo.video_base64}
+                  {...(generatedVideo.video_url && { videoUrl: generatedVideo.video_url })}
+                  {...(generatedVideo.video_base64 && { videoBase64: generatedVideo.video_base64 })}
                   duration={generatedVideo.duration}
                   frames={generatedVideo.frames}
                   fps={generatedVideo.fps}
-                  fileSize={generatedVideo.file_size}
+                  {...(generatedVideo.file_size && { fileSize: generatedVideo.file_size })}
                   format={generatedVideo.format}
                   width={generatedVideo.width}
                   height={generatedVideo.height}

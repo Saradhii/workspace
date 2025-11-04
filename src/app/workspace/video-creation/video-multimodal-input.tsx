@@ -31,7 +31,7 @@ const videoModels: ImageModel[] = [
   {
     id: "wan-2-2-i2v-14b-fast",
     name: "wan-2-2-i2v-14b-fast",
-    display_name: "WAN 2.2",
+    displayName: "WAN 2.2",
     description: "Fast image-to-video generation",
     provider: "Internal",
     color: "text-blue-500",

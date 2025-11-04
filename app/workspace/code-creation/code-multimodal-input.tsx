@@ -13,7 +13,8 @@ import { Context } from "../image-creation/elements/context";
 import { Select, SelectContent, SelectTrigger, SelectItem } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { List } from "lucide-react";
-import { CodeModelSelectorModal, type CodeModel } from "./model-selector-modal";
+import { CodeModelSelectorModal } from "./model-selector-modal";
+import type { CodeModel } from "@/types/models";
 
 // Language options
 const languages = [

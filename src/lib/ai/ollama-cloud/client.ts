@@ -134,10 +134,13 @@ export class OllamaClient {
   async post<T>(endpoint: string, data?: any): Promise<T> {
     const response = await this.fetchWithRetry(
       `${this.baseUrl}${endpoint}`,
-      {
+      data ? {
         method: 'POST',
         headers: this.getHeaders(),
-        body: data ? JSON.stringify(data) : undefined,
+        body: JSON.stringify(data),
+      } : {
+        method: 'POST',
+        headers: this.getHeaders(),
       }
     );
 
@@ -226,10 +229,10 @@ export class OllamaClient {
   getConfig(): Omit<OllamaConfig, 'apiKey'> {
     return {
       baseUrl: this.config.baseUrl,
-      defaultModel: this.config.defaultModel,
-      timeout: this.config.timeout,
-      retries: this.config.retries,
-      retryDelay: this.config.retryDelay,
+      ...(this.config.defaultModel && { defaultModel: this.config.defaultModel }),
+      ...(this.config.timeout && { timeout: this.config.timeout }),
+      ...(this.config.retries && { retries: this.config.retries }),
+      ...(this.config.retryDelay && { retryDelay: this.config.retryDelay }),
     };
   }
 

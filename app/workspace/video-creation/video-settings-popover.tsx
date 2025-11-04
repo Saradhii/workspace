@@ -45,7 +45,7 @@ export function VideoSettingsPopover({
             <Label className="text-xs">Frames: {videoParams.frames}</Label>
             <Slider
               value={[videoParams.frames]}
-              onValueChange={([value]) => setVideoParams(prev => ({ ...prev, frames: value }))}
+              onValueChange={([value]) => setVideoParams({ ...videoParams, frames: value })}
               min={21}
               max={140}
               step={1}
@@ -61,7 +61,7 @@ export function VideoSettingsPopover({
             <Label className="text-xs">FPS: {videoParams.fps}</Label>
             <Slider
               value={[videoParams.fps]}
-              onValueChange={([value]) => setVideoParams(prev => ({ ...prev, fps: value }))}
+              onValueChange={([value]) => setVideoParams({ ...videoParams, fps: value })}
               min={16}
               max={24}
               step={1}
@@ -78,7 +78,7 @@ export function VideoSettingsPopover({
             <Select
               value={videoParams.resolution}
               onValueChange={(value: "480p" | "720p") =>
-                setVideoParams(prev => ({ ...prev, resolution: value }))
+                setVideoParams({ ...videoParams, resolution: value })
               }
             >
               <SelectTrigger>
@@ -97,7 +97,7 @@ export function VideoSettingsPopover({
             <Select
               value={videoParams.fast ? "fast" : "quality"}
               onValueChange={(value) =>
-                setVideoParams(prev => ({ ...prev, fast: value === "fast" }))
+                setVideoParams({ ...videoParams, fast: value === "fast" })
               }
             >
               <SelectTrigger>
@@ -115,7 +115,7 @@ export function VideoSettingsPopover({
             <Label className="text-xs">Guidance Scale: {videoParams.guidanceScale.toFixed(1)}</Label>
             <Slider
               value={[videoParams.guidanceScale]}
-              onValueChange={([value]) => setVideoParams(prev => ({ ...prev, guidanceScale: value }))}
+              onValueChange={([value]) => setVideoParams({ ...videoParams, guidanceScale: value })}
               min={0.0}
               max={3.0}
               step={0.1}

@@ -26,11 +26,16 @@ export class EmbeddingsService {
     inputs: string[],
     options?: EmbeddingRequest['options']
   ): Promise<number[][]> {
-    const response = await this.createEmbedding({
+    const request: EmbeddingRequest = {
       model,
       input: inputs,
-      options,
-    });
+    };
+
+    if (options) {
+      request.options = options;
+    }
+
+    const response = await this.createEmbedding(request);
 
     return response.embeddings;
   }
@@ -48,9 +53,13 @@ export class EmbeddingsService {
     let normB = 0;
 
     for (let i = 0; i < vecA.length; i++) {
-      dotProduct += vecA[i] * vecB[i];
-      normA += vecA[i] * vecA[i];
-      normB += vecB[i] * vecB[i];
+      const a = vecA[i];
+      const b = vecB[i];
+      if (a !== undefined && b !== undefined) {
+        dotProduct += a * b;
+        normA += a * a;
+        normB += b * b;
+      }
     }
 
     normA = Math.sqrt(normA);
@@ -82,11 +91,16 @@ export class EmbeddingsService {
     const corpusEmbeddings = await this.createBatchEmbeddings(model, corpus);
 
     // Calculate similarities
+    const queryVector = queryEmbedding.embeddings[0];
+    if (!queryVector) {
+      return [];
+    }
+
     const similarities = corpusEmbeddings.map((embedding, index) => ({
       text: corpus[index],
-      score: this.cosineSimilarity(queryEmbedding.embeddings[0], embedding),
+      score: this.cosineSimilarity(queryVector, embedding),
       index,
-    }));
+    })).filter(item => item.text !== undefined);
 
     // Sort by similarity score and return top K
     return similarities
@@ -119,7 +133,12 @@ export class EmbeddingsService {
       for (let j = i + 1; j < texts.length; j++) {
         if (visited.has(j)) continue;
 
-        const similarity = this.cosineSimilarity(embeddings[i], embeddings[j]);
+        const embeddingI = embeddings[i];
+        const embeddingJ = embeddings[j];
+
+        if (!embeddingI || !embeddingJ) continue;
+
+        const similarity = this.cosineSimilarity(embeddingI, embeddingJ);
         if (similarity >= threshold) {
           cluster.push(texts[j]);
           visited.add(j);
@@ -148,7 +167,10 @@ export class EmbeddingsService {
     const means = new Array(d).fill(0);
     for (const embedding of embeddings) {
       for (let i = 0; i < d; i++) {
-        means[i] += embedding[i];
+        const val = embedding[i];
+        if (val !== undefined) {
+          means[i] += val;
+        }
       }
     }
     for (let i = 0; i < d; i++) {
@@ -156,7 +178,7 @@ export class EmbeddingsService {
     }
 
     const centered = embeddings.map(embedding =>
-      embedding.map((val, i) => val - means[i])
+      embedding.map((val, i) => (val !== undefined ? val - means[i] : 0))
     );
 
     // Compute covariance matrix

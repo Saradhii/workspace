@@ -92,8 +92,8 @@ export class ChatService {
             type: 'complete',
             timestamp: new Date().toISOString(),
             content: accumulatedContent,
-            thinking: accumulatedThinking || undefined,
-            tool_calls: accumulatedToolCalls.length > 0 ? accumulatedToolCalls : undefined,
+            ...(accumulatedThinking && { thinking: accumulatedThinking }),
+            ...(accumulatedToolCalls.length > 0 && { tool_calls: accumulatedToolCalls }),
             done: true,
             metrics: {
               total_duration: chunk.total_duration || 0,
@@ -204,7 +204,7 @@ export class ChatService {
   ): Promise<ChatResponse> {
     // Ensure the first user message has images
     const messages = request.messages.map(msg => {
-      if (msg.role === 'user' && msg.content === request.messages[0].content) {
+      if (msg.role === 'user' && request.messages[0] && msg.content === request.messages[0].content) {
         return {
           ...msg,
           images: request.images,

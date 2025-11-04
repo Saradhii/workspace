@@ -89,7 +89,7 @@ export default function ImageCreation() {
         const modelName = selectedModels[0];
         const result = await generateImage({
           ...params,
-          model: modelName,
+          model: modelName as 'chroma' | 'neta-lumina' | 'flux' | undefined,
         });
 
         if (result.success && result.image_url || result.image_base64) {
@@ -178,7 +178,7 @@ export default function ImageCreation() {
           const modelName = selectedModels[0];
           const result = await generateImage({
             ...params,
-            model: modelName,
+            model: modelName as 'chroma' | 'neta-lumina' | 'flux' | undefined,
           });
 
           if (result.success && result.image_url || result.image_base64) {
