@@ -7,17 +7,26 @@ import {
   CodeStreamEvent
 } from '@/types/api';
 import { providerManager, ProviderType } from './providers';
+import type { BaseChatMessage } from './providers/base-provider';
 
 // Initialize providers from environment
 async function initializeProviders() {
   // Configure Ollama if API key is available
   if (process.env.OLLAMA_API_KEY) {
-    providerManager.configure('ollama', {
+    const config: any = {
       type: 'ollama',
       apiKey: process.env.OLLAMA_API_KEY,
-      baseUrl: process.env.OLLAMA_BASE_URL,
-      defaultModel: process.env.OLLAMA_DEFAULT_MODEL || 'gpt-oss:20b',
-    });
+    };
+
+    if (process.env.OLLAMA_BASE_URL) {
+      config.baseUrl = process.env.OLLAMA_BASE_URL;
+    }
+
+    if (process.env.OLLAMA_DEFAULT_MODEL) {
+      config.defaultModel = process.env.OLLAMA_DEFAULT_MODEL;
+    }
+
+    providerManager.configure('ollama', config);
   }
 
   // Set default provider
@@ -37,11 +46,10 @@ export class OllamaAIService {
       const provider = await providerManager.get();
 
       // Transform request to match provider format
+      const defaultMessages: BaseChatMessage[] = [{ role: 'user', content: '' }];
       const request = {
         model: params.model || 'gpt-oss:20b',
-        messages: params.messages || [
-          { role: 'user', content: params.prompt || '' }
-        ],
+        messages: (params.messages as BaseChatMessage[]) || defaultMessages,
         temperature: params.temperature || 0.7,
         max_tokens: params.max_tokens || 1024,
         stream: false,
@@ -52,21 +60,20 @@ export class OllamaAIService {
       return {
         success: true,
         content: response.content,
-        model: response.model,
+        model_used: response.model,
         usage: response.usage || {
           prompt_tokens: 0,
           completion_tokens: 0,
           total_tokens: 0,
         },
         finish_reason: response.finish_reason || 'stop',
-        thinking: response.thinking,
       };
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Text generation failed',
         content: '',
-        model: params.model || 'gpt-oss:20b',
+        model_used: params.model || 'gpt-oss:20b',
         usage: {
           prompt_tokens: 0,
           completion_tokens: 0,
@@ -84,11 +91,10 @@ export class OllamaAIService {
     try {
       const provider = await providerManager.get();
 
+      const defaultMessages: BaseChatMessage[] = [{ role: 'user', content: '' }];
       const request = {
         model: params.model || 'gpt-oss:20b',
-        messages: params.messages || [
-          { role: 'user', content: params.prompt || '' }
-        ],
+        messages: (params.messages as BaseChatMessage[]) || defaultMessages,
         temperature: params.temperature || 0.7,
         max_tokens: params.max_tokens || 1024,
         stream: true,
@@ -99,13 +105,6 @@ export class OllamaAIService {
 
       for await (const event of provider.streamChat(request)) {
         switch (event.type) {
-          case 'start':
-            yield {
-              type: 'start',
-              model: request.model,
-            };
-            break;
-
           case 'content':
             accumulatedContent += event.content || '';
             yield {
@@ -165,9 +164,7 @@ export class OllamaAIService {
       // Use a coding-focused model if available
       const model = params.model || 'qwen3-coder:480b';
 
-      const request = {
-        model,
-        messages: [
+      const messages: BaseChatMessage[] = [
           {
             role: 'system',
             content: 'You are an expert programmer. Generate clean, well-commented code.'
@@ -176,7 +173,11 @@ export class OllamaAIService {
             role: 'user',
             content: params.prompt || ''
           }
-        ],
+        ];
+
+      const request = {
+        model,
+        messages,
         temperature: params.temperature || 0.3,
         max_tokens: params.max_tokens || 2048,
         stream: false,
@@ -186,29 +187,18 @@ export class OllamaAIService {
 
       return {
         success: true,
-        content: response.content,
-        model: response.model,
+        code: response.content,
         language: params.language || 'javascript',
-        usage: response.usage || {
-          prompt_tokens: 0,
-          completion_tokens: 0,
-          total_tokens: 0,
-        },
-        finish_reason: response.finish_reason || 'stop',
+        model: response.model,
+        tokens_used: response.usage?.total_tokens || 0,
       };
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Code generation failed',
-        content: '',
-        model: params.model || 'qwen3-coder:480b',
+        code: '',
         language: params.language || 'javascript',
-        usage: {
-          prompt_tokens: 0,
-          completion_tokens: 0,
-          total_tokens: 0,
-        },
-        finish_reason: 'error',
+        model: params.model || 'qwen3-coder:480b',
       };
     }
   }
@@ -222,9 +212,7 @@ export class OllamaAIService {
 
       const model = params.model || 'qwen3-coder:480b';
 
-      const request = {
-        model,
-        messages: [
+      const messages: BaseChatMessage[] = [
           {
             role: 'system',
             content: 'You are an expert programmer. Generate clean, well-commented code.'
@@ -233,7 +221,11 @@ export class OllamaAIService {
             role: 'user',
             content: params.prompt || ''
           }
-        ],
+        ];
+
+      const request = {
+        model,
+        messages,
         temperature: params.temperature || 0.3,
         max_tokens: params.max_tokens || 2048,
         stream: true,
@@ -246,8 +238,6 @@ export class OllamaAIService {
           case 'start':
             yield {
               type: 'start',
-              model,
-              language: params.language || 'javascript',
             };
             break;
 
@@ -256,9 +246,6 @@ export class OllamaAIService {
             yield {
               type: 'content',
               content: event.content || '',
-              accumulated: accumulatedContent,
-              model,
-              language: params.language || 'javascript',
             };
             break;
 
@@ -266,10 +253,6 @@ export class OllamaAIService {
             yield {
               type: 'done',
               content: accumulatedContent,
-              accumulated: accumulatedContent,
-              usage: event.usage,
-              model,
-              language: params.language || 'javascript',
             };
             return;
 
@@ -277,8 +260,6 @@ export class OllamaAIService {
             yield {
               type: 'error',
               error: event.error || 'Code streaming error',
-              model,
-              language: params.language || 'javascript',
             };
             return;
         }

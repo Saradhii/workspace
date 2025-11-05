@@ -239,8 +239,8 @@ export class OllamaError extends Error {
   constructor(data: OllamaErrorData) {
     super(data.error);
     this.name = 'OllamaError';
-    this.type = data.type;
-    this.code = data.code;
+    if (data.type) this.type = data.type;
+    if (data.code) this.code = data.code;
   }
 }
 

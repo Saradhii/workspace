@@ -79,7 +79,7 @@ export default function ImageCreation() {
         }
       } else {
         // Generate single image
-        const modelName = selectedModels[0] as 'chroma' | 'neta-lumina';
+        const modelName = selectedModels[0] as 'chroma' | 'neta-lumina' | 'flux';
         const result = await generateImage({
           ...params,
           model: modelName,
@@ -153,7 +153,7 @@ export default function ImageCreation() {
           }
         } else {
           // Generate single image
-          const modelName = selectedModels[0] as 'chroma' | 'neta-lumina';
+          const modelName = selectedModels[0] as 'chroma' | 'neta-lumina' | 'flux';
           const result = await generateImage({
             ...params,
             model: modelName,

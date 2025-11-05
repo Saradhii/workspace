@@ -144,6 +144,7 @@ export interface TextModelsResponse {
   success: boolean;
   models: TextModel[];
   count: number;
+  provider?: string;
 }
 
 // ===================================
@@ -158,7 +159,7 @@ export interface ImageGenerationRequest {
   steps?: number;
   cfg?: number;
   seed?: number;
-  model?: 'chroma' | 'neta-lumina';
+  model?: 'chroma' | 'neta-lumina' | 'flux';
   user_id?: string;
 }
 
@@ -368,6 +369,7 @@ export interface CodeModelsResponse {
   success: boolean;
   models: CodeModel[];
   count: number;
+  provider?: string;
 }
 
 // ===================================

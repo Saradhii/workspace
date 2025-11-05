@@ -223,16 +223,18 @@ class AIManager {
     if (this.currentProvider === 'ollama') {
       const models = await ollamaAIService.getModels('text');
       return {
+        success: true,
         provider: 'ollama',
         models: models.map(m => ({
           id: m.id,
           name: m.displayName,
           displayName: m.displayName,
-          description: m.description,
+          description: m.description || 'Large language model for text generation',
           provider: 'Ollama',
           context_length: m.contextWindow || 4096,
           supports_reasoning: m.capabilities?.thinking || false,
         })),
+        count: models.length,
       };
     }
 
@@ -260,17 +262,19 @@ class AIManager {
     if (this.currentProvider === 'ollama') {
       const models = await ollamaAIService.getModels('code');
       return {
+        success: true,
         provider: 'ollama',
         models: models.map(m => ({
           id: m.id,
           name: m.displayName,
           displayName: m.displayName,
-          description: m.description,
+          description: m.description || 'Code generation model',
           provider: 'Ollama',
           context_length: m.contextWindow || 4096,
           specialty: 'code_generation',
           supports_reasoning: m.capabilities?.thinking || false,
         })),
+        count: models.length,
       };
     }
 

@@ -87,9 +87,12 @@ export default function ImageCreation() {
       } else {
         // Generate single image
         const modelName = selectedModels[0];
+        if (!modelName) {
+          throw new Error('No model selected');
+        }
         const result = await generateImage({
           ...params,
-          model: modelName as 'chroma' | 'neta-lumina' | 'flux' | undefined,
+          model: modelName as 'chroma' | 'neta-lumina' | 'flux',
         });
 
         if (result.success && result.image_url || result.image_base64) {
@@ -176,9 +179,12 @@ export default function ImageCreation() {
         } else {
           // Generate single image
           const modelName = selectedModels[0];
+          if (!modelName) {
+            throw new Error('No model selected');
+          }
           const result = await generateImage({
             ...params,
-            model: modelName as 'chroma' | 'neta-lumina' | 'flux' | undefined,
+            model: modelName as 'chroma' | 'neta-lumina' | 'flux',
           });
 
           if (result.success && result.image_url || result.image_base64) {

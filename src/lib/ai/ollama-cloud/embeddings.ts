@@ -96,11 +96,16 @@ export class EmbeddingsService {
       return [];
     }
 
-    const similarities = corpusEmbeddings.map((embedding, index) => ({
-      text: corpus[index],
-      score: this.cosineSimilarity(queryVector, embedding),
-      index,
-    })).filter(item => item.text !== undefined);
+    const similarities = corpusEmbeddings.map((embedding, index) => {
+      const text = corpus[index];
+      if (text === undefined) return null;
+
+      return {
+        text,
+        score: this.cosineSimilarity(queryVector, embedding),
+        index,
+      };
+    }).filter((item): item is NonNullable<typeof item> => item !== null);
 
     // Sort by similarity score and return top K
     return similarities
@@ -126,7 +131,9 @@ export class EmbeddingsService {
     for (let i = 0; i < texts.length; i++) {
       if (visited.has(i)) continue;
 
-      const cluster = [texts[i]];
+      const textI = texts[i];
+      if (textI === undefined) continue;
+      const cluster: string[] = [textI];
       visited.add(i);
 
       // Find similar texts
@@ -138,10 +145,13 @@ export class EmbeddingsService {
 
         if (!embeddingI || !embeddingJ) continue;
 
-        const similarity = this.cosineSimilarity(embeddingI, embeddingJ);
-        if (similarity >= threshold) {
-          cluster.push(texts[j]);
-          visited.add(j);
+        const text = texts[j];
+        if (text !== undefined) {
+          const similarity = this.cosineSimilarity(embeddingI, embeddingJ);
+          if (similarity >= threshold) {
+            cluster.push(text);
+            visited.add(j);
+          }
         }
       }
 
@@ -160,12 +170,16 @@ export class EmbeddingsService {
   ): number[][] {
     if (embeddings.length === 0) return [];
 
-    const n = embeddings.length;
-    const d = embeddings[0].length;
+    // Filter out invalid embeddings and ensure all have the same length
+    const validEmbeddings = embeddings.filter(e => e && e.length > 0);
+    if (validEmbeddings.length === 0) return [];
+
+    const n = validEmbeddings.length;
+    const d = validEmbeddings[0]!.length;
 
     // Center the data
     const means = new Array(d).fill(0);
-    for (const embedding of embeddings) {
+    for (const embedding of validEmbeddings) {
       for (let i = 0; i < d; i++) {
         const val = embedding[i];
         if (val !== undefined) {
@@ -177,8 +191,11 @@ export class EmbeddingsService {
       means[i] /= n;
     }
 
-    const centered = embeddings.map(embedding =>
-      embedding.map((val, i) => (val !== undefined ? val - means[i] : 0))
+    const centered = validEmbeddings.map(embedding =>
+      embedding.map((val, i) => {
+        if (val === undefined || means[i] === undefined) return 0;
+        return val - means[i];
+      })
     );
 
     // Compute covariance matrix
@@ -186,9 +203,18 @@ export class EmbeddingsService {
     for (let i = 0; i < d; i++) {
       for (let j = 0; j < d; j++) {
         for (let k = 0; k < n; k++) {
-          cov[i][j] += centered[k][i] * centered[k][j];
+          const centeredEmbedding = centered[k];
+          if (centeredEmbedding && cov[i]) {
+            const valI = centeredEmbedding[i];
+            const valJ = centeredEmbedding[j];
+            if (valI !== undefined && valJ !== undefined) {
+              cov[i][j] += valI * valJ;
+            }
+          }
         }
-        cov[i][j] /= (n - 1);
+        if (cov[i] && n > 1) {
+          cov[i][j] /= (n - 1);
+        }
       }
     }
 

@@ -17,6 +17,7 @@ export interface CodeModel extends BaseModel {
   context_length: number;
   specialty?: string;
   supports_reasoning?: boolean;
+  display_name?: string; // Deprecated alias for displayName
 }
 
 export interface ImageModel extends BaseModel {

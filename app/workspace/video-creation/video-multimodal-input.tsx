@@ -51,7 +51,7 @@ interface VideoMultimodalInputProps {
   onModelChange?: (modelId: string) => void;
   onSuggestionClick: (suggestion: string) => void;
   videoParams: VideoParams;
-  setVideoParams: (params: VideoParams) => void;
+  setVideoParams: (params: VideoParams | ((prev: VideoParams) => VideoParams)) => void;
   messages: ChatMessage[];
   setMessages: (messages: ChatMessage[]) => void;
 }

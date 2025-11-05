@@ -116,7 +116,7 @@ export abstract class BaseAIProvider {
   /**
    * Create a streaming chat completion
    */
-  abstract* streamChat(request: BaseChatRequest): AsyncGenerator<BaseStreamEvent, void, unknown>;
+  abstract streamChat(request: BaseChatRequest): AsyncIterable<BaseStreamEvent>;
 
   /**
    * Create embeddings

@@ -9,7 +9,9 @@ export interface ProviderConfig {
   apiKey?: string;
   baseUrl?: string;
   defaultModel?: string;
-  [key: string]: any;
+  timeout?: number;
+  retries?: number;
+  retryDelay?: number;
 }
 
 class ProviderRegistry {
@@ -184,7 +186,10 @@ export class ProviderManager {
 
       if (filtered.length > 0) {
         // Return the first matching model
-        return { provider, model: filtered[0] };
+        const model = filtered[0];
+        if (model) {
+          return { provider, model };
+        }
       }
     }
 
@@ -196,7 +201,8 @@ export class ProviderManager {
 export const providerManager = new ProviderManager();
 
 // Export types
-export { BaseAIProvider, ModelInfo, BaseChatRequest, BaseChatResponse, BaseStreamEvent, BaseEmbeddingRequest, BaseEmbeddingResponse } from './base-provider';
+export type { ModelInfo, BaseChatRequest, BaseChatResponse, BaseStreamEvent, BaseEmbeddingRequest, BaseEmbeddingResponse } from './base-provider';
+export { BaseAIProvider } from './base-provider';
 export { OllamaProvider } from './ollama-provider';
 
 // Convenience functions

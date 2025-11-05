@@ -8,7 +8,7 @@ import {
   BaseChatMessage,
   ModelInfo,
 } from './base-provider';
-import { ollamaCloud, ChatRequest, Message, Tool, StreamEvent } from '@/lib/ai/ollama-cloud';
+import { ollamaCloud, ChatRequest, ChatResponse, Message, Tool, StreamEvent } from '@/lib/ai/ollama-cloud';
 
 export class OllamaProvider extends BaseAIProvider {
   name = 'Ollama Cloud';
@@ -17,15 +17,20 @@ export class OllamaProvider extends BaseAIProvider {
   private initialized = false;
 
   async initialize(config: { apiKey?: string; baseUrl?: string }): Promise<void> {
-    if (!config.apiKey) {
-      config.apiKey = process.env.OLLAMA_API_KEY;
+    const ollamaConfig: { apiKey?: string; baseUrl?: string } = {};
+
+    if (config.apiKey || process.env.OLLAMA_API_KEY) {
+      ollamaConfig.apiKey = config.apiKey || process.env.OLLAMA_API_KEY || '';
     }
-    if (!config.baseUrl) {
-      config.baseUrl = process.env.OLLAMA_BASE_URL;
+
+    if (config.baseUrl) {
+      ollamaConfig.baseUrl = config.baseUrl;
+    } else if (process.env.OLLAMA_BASE_URL) {
+      ollamaConfig.baseUrl = process.env.OLLAMA_BASE_URL;
     }
 
     // Update the Ollama Cloud client configuration
-    ollamaCloud.client.updateConfig(config);
+    ollamaCloud.client.updateConfig(ollamaConfig);
 
     this.initialized = true;
   }
@@ -47,15 +52,15 @@ export class OllamaProvider extends BaseAIProvider {
         id: model.model,
         name: model.name,
         displayName: ollamaCloud.models.formatModelName(model.model),
-        description: capabilities.description,
+        ...(capabilities.description && { description: capabilities.description }),
         capabilities: {
           text: true,
-          vision: capabilities.supportsVision,
-          tools: capabilities.supportsTools,
-          thinking: capabilities.supportsThinking,
+          vision: capabilities.supportsVision || false,
+          tools: capabilities.supportsTools || false,
+          thinking: capabilities.supportsThinking || false,
           embeddings: model.model.includes('embedding'),
         },
-        contextWindow: capabilities.contextWindow,
+        ...(capabilities.contextWindow && { contextWindow: capabilities.contextWindow }),
         pricing: {
           input: 0, // Ollama Cloud is currently free
           output: 0,
@@ -72,7 +77,7 @@ export class OllamaProvider extends BaseAIProvider {
     const ollamaRequest = this.convertToOllamaRequest(request);
     const response = await ollamaCloud.chat.createChat(ollamaRequest);
 
-    return this.convertFromOllamaResponse(response);
+    return this.convertResponse(response);
   }
 
   async* streamChat(request: BaseChatRequest): AsyncGenerator<BaseStreamEvent, void, unknown> {
@@ -113,9 +118,9 @@ export class OllamaProvider extends BaseAIProvider {
       messages: this.convertMessages(request.messages),
       temperature: request.temperature,
       options: {
-        temperature: request.temperature,
-        num_predict: request.max_tokens,
-        top_p: request.top_p,
+        ...(request.temperature !== undefined && { temperature: request.temperature }),
+        ...(request.max_tokens !== undefined && { num_predict: request.max_tokens }),
+        ...(request.top_p !== undefined && { top_p: request.top_p }),
       },
       tools: request.tools as Tool[],
       stream: request.stream,
@@ -125,16 +130,26 @@ export class OllamaProvider extends BaseAIProvider {
   }
 
   protected convertMessages(messages: BaseChatMessage[]): Message[] {
-    return messages.map(msg => ({
-      role: msg.role,
-      content: msg.content,
-      images: msg.images,
-      tool_calls: msg.tool_calls,
-    }));
+    return messages.map(msg => {
+      const message: Message = {
+        role: msg.role,
+        content: msg.content,
+      };
+
+      if (msg.images && msg.images.length > 0) {
+        message.images = msg.images;
+      }
+
+      if (msg.tool_calls && msg.tool_calls.length > 0) {
+        message.tool_calls = msg.tool_calls;
+      }
+
+      return message;
+    });
   }
 
-  private convertFromOllamaResponse(response: any): BaseChatResponse {
-    return {
+  protected convertResponse(response: ChatResponse): BaseChatResponse {
+    const result: BaseChatResponse = {
       content: response.message?.content || '',
       model: response.model,
       usage: {
@@ -143,9 +158,17 @@ export class OllamaProvider extends BaseAIProvider {
         total_tokens: (response.prompt_eval_count || 0) + (response.eval_count || 0),
       },
       finish_reason: response.done ? 'stop' : 'length',
-      thinking: response.message?.thinking,
-      tool_calls: response.message?.tool_calls,
     };
+
+    if (response.message?.thinking !== undefined) {
+      result.thinking = response.message.thinking;
+    }
+
+    if (response.message?.tool_calls && response.message.tool_calls.length > 0) {
+      result.tool_calls = response.message.tool_calls;
+    }
+
+    return result;
   }
 
   private convertStreamEvent(event: StreamEvent): BaseStreamEvent {
@@ -156,41 +179,58 @@ export class OllamaProvider extends BaseAIProvider {
         };
 
       case 'content':
-        return {
+        const contentResult: BaseStreamEvent = {
           type: 'content',
-          content: event.content,
-          accumulated: event.content,
         };
+        if (event.content !== undefined) {
+          contentResult.content = event.content;
+          contentResult.accumulated = event.content;
+        }
+        return contentResult;
 
       case 'thinking':
-        return {
+        const thinkingResult: BaseStreamEvent = {
           type: 'thinking',
-          thinking: event.thinking,
         };
+        if (event.thinking !== undefined) {
+          thinkingResult.thinking = event.thinking;
+        }
+        return thinkingResult;
 
       case 'tool_call':
-        return {
+        const toolCallResult: BaseStreamEvent = {
           type: 'tool_call',
-          tool_calls: event.tool_calls || undefined,
         };
+        if (event.tool_calls && event.tool_calls.length > 0) {
+          toolCallResult.tool_calls = event.tool_calls;
+        }
+        return toolCallResult;
 
       case 'complete':
-        return {
+        const completeResult: BaseStreamEvent = {
           type: 'done',
           content: event.content || '',
-          accumulated: event.content || undefined,
-          usage: event.metrics ? {
+        };
+        if (event.content !== undefined) {
+          completeResult.accumulated = event.content;
+        }
+        if (event.metrics) {
+          completeResult.usage = {
             prompt_tokens: event.metrics.prompt_eval_count,
             completion_tokens: event.metrics.eval_count,
             total_tokens: event.metrics.prompt_eval_count + event.metrics.eval_count,
-          } : undefined,
-        };
+          };
+        }
+        return completeResult;
 
       case 'error':
-        return {
+        const errorResult: BaseStreamEvent = {
           type: 'error',
-          error: event.error || undefined,
         };
+        if (event.error !== undefined) {
+          errorResult.error = event.error;
+        }
+        return errorResult;
 
       default:
         return {

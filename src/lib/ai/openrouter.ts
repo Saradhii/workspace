@@ -344,7 +344,7 @@ export class OpenRouterService {
         .map((model: any): TextModel => ({
           id: model.id,
           name: model.name || model.id,
-          display_name: model.name || model.id.split('/').pop() || model.id,
+          displayName: model.name || model.id.split('/').pop() || model.id,
           description: 'Large language model for text generation',
           provider: 'OpenRouter',
           context_length: model.context_length || 4096,
@@ -356,7 +356,7 @@ export class OpenRouterService {
         {
           id: 'chutes:Alibaba-NLP/Tongyi-DeepResearch-30B-A3B',
           name: 'Tongyi DeepResearch 30B',
-          display_name: 'Tongyi DeepResearch 30B',
+          displayName: 'Tongyi DeepResearch 30B',
           description: 'Advanced reasoning model with thinking capabilities',
           provider: 'Chutes AI',
           context_length: 8192,
@@ -365,7 +365,7 @@ export class OpenRouterService {
         {
           id: 'chutes:openai/gpt-oss-20b',
           name: 'GPT-OSS 20B',
-          display_name: 'GPT-OSS 20B',
+          displayName: 'GPT-OSS 20B',
           description: 'Open source GPT model with reasoning support',
           provider: 'Chutes AI',
           context_length: 4096,
@@ -374,7 +374,7 @@ export class OpenRouterService {
         {
           id: 'chutes:unsloth/gemma-3-4b-it',
           name: 'Gemma 3 4B IT',
-          display_name: 'Gemma 3 4B IT',
+          displayName: 'Gemma 3 4B IT',
           description: 'Efficient instruction-tuned model',
           provider: 'Chutes AI',
           context_length: 8192,
@@ -422,7 +422,7 @@ export class OpenRouterService {
         .map((model: any): CodeModel => ({
           id: model.id,
           name: model.name || model.id,
-          display_name: model.name || model.id.split('/').pop() || model.id,
+          displayName: model.name || model.id.split('/').pop() || model.id,
           description: model.description || 'Code generation model',
           provider: model.id.split('/')[0] || 'unknown',
           context_length: model.context_length || 4096,
@@ -435,7 +435,7 @@ export class OpenRouterService {
         codeModels.unshift({
           id: 'zai-org/GLM-4.5-Air',
           name: 'GLM-4.5-Air',
-          display_name: 'GLM-4.5-Air (Free)',
+          displayName: 'GLM-4.5-Air (Free)',
           description: 'Zhipu AI\'s GLM-4.5-Air model optimized for code generation',
           provider: 'zai-org',
           context_length: 8192,
