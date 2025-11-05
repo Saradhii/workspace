@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { FloatingThemeToggle } from "@/components/floating-theme-toggle";
 import { Toaster } from "sonner";
 
 const geistSans = Geist({
@@ -51,6 +52,7 @@ export default function RootLayout({
           storageKey="chatbot-theme"
           enableSystem={false}
         >
+          <FloatingThemeToggle />
           {children}
           <Toaster
             position="bottom-right"

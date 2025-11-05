@@ -142,7 +142,7 @@ export interface VideoMultimodalInputProps extends Omit<MultimodalInputProps, 'm
   messages: ChatMessage[];
   setMessages: Dispatch<SetStateAction<ChatMessage[]>>;
   videoParams: VideoParams;
-  setVideoParams: Dispatch<SetStateAction<VideoParams>>;
+  setVideoParams: (params: Partial<VideoParams> | ((prev: VideoParams) => VideoParams)) => void;
 }
 
 export interface CodeMultimodalInputProps extends Omit<MultimodalInputProps, 'messages' | 'setMessages'> {

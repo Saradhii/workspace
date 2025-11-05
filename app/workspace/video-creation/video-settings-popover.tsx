@@ -22,12 +22,6 @@ export function VideoSettingsPopover({
   videoParams,
   setVideoParams,
 }: VideoSettingsPopoverProps) {
-  const updateVideoParam = <K extends keyof VideoParams>(
-    key: K,
-    value: VideoParams[K]
-  ) => {
-    setVideoParams({ [key]: value });
-  };
   const [open, setOpen] = useState(false);
 
   return (
@@ -51,11 +45,7 @@ export function VideoSettingsPopover({
             <Label className="text-xs">Frames: {videoParams.frames}</Label>
             <Slider
               value={[videoParams.frames]}
-              onValueChange={(value: number[]) => {
-                if (value && value[0] !== undefined) {
-                  setVideoParams({ frames: value[0] });
-                }
-              }}
+              onValueChange={([value]) => setVideoParams((prev: VideoParams) => ({ ...prev, frames: value as number }))}
               min={21}
               max={140}
               step={1}
@@ -71,11 +61,7 @@ export function VideoSettingsPopover({
             <Label className="text-xs">FPS: {videoParams.fps}</Label>
             <Slider
               value={[videoParams.fps]}
-              onValueChange={(value: number[]) => {
-                if (value && value[0] !== undefined) {
-                  setVideoParams({ fps: value[0] });
-                }
-              }}
+              onValueChange={([value]) => setVideoParams((prev: VideoParams) => ({ ...prev, fps: value as number }))}
               min={16}
               max={24}
               step={1}
@@ -92,7 +78,7 @@ export function VideoSettingsPopover({
             <Select
               value={videoParams.resolution}
               onValueChange={(value: "480p" | "720p") =>
-                updateVideoParam('resolution', value)
+                setVideoParams((prev: VideoParams) => ({ ...prev, resolution: value }))
               }
             >
               <SelectTrigger>
@@ -111,7 +97,7 @@ export function VideoSettingsPopover({
             <Select
               value={videoParams.fast ? "fast" : "quality"}
               onValueChange={(value) =>
-                updateVideoParam('fast', value === "fast")
+                setVideoParams((prev: VideoParams) => ({ ...prev, fast: value === "fast" }))
               }
             >
               <SelectTrigger>
@@ -129,11 +115,7 @@ export function VideoSettingsPopover({
             <Label className="text-xs">Guidance Scale: {videoParams.guidanceScale.toFixed(1)}</Label>
             <Slider
               value={[videoParams.guidanceScale]}
-              onValueChange={(value: number[]) => {
-                if (value && value[0] !== undefined) {
-                  updateVideoParam('guidanceScale', value[0]);
-                }
-              }}
+              onValueChange={([value]) => setVideoParams((prev: VideoParams) => ({ ...prev, guidanceScale: value as number }))}
               min={0.0}
               max={3.0}
               step={0.1}

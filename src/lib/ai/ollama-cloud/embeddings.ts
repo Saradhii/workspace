@@ -207,13 +207,15 @@ export class EmbeddingsService {
           if (centeredEmbedding && cov[i]) {
             const valI = centeredEmbedding[i];
             const valJ = centeredEmbedding[j];
-            if (valI !== undefined && valJ !== undefined) {
-              cov[i][j] += valI * valJ;
+            if (valI !== undefined && valJ !== undefined && cov[i]) {
+              const currentValue = cov[i]![j] ?? 0;
+              cov[i]![j] = currentValue + valI * valJ;
             }
           }
         }
         if (cov[i] && n > 1) {
-          cov[i][j] /= (n - 1);
+          const currentValue = cov[i]![j] ?? 0;
+          cov[i]![j] = currentValue / (n - 1);
         }
       }
     }

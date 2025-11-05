@@ -113,20 +113,29 @@ export class OllamaProvider extends BaseAIProvider {
   }
 
   private convertToOllamaRequest(request: BaseChatRequest): ChatRequest {
-    return {
+    const result: ChatRequest = {
       model: request.model,
       messages: this.convertMessages(request.messages),
-      temperature: request.temperature,
       options: {
         ...(request.temperature !== undefined && { temperature: request.temperature }),
         ...(request.max_tokens !== undefined && { num_predict: request.max_tokens }),
         ...(request.top_p !== undefined && { top_p: request.top_p }),
       },
       tools: request.tools as Tool[],
-      stream: request.stream,
-      think: request.think,
-      format: request.format,
     };
+
+    // Only include defined optional properties
+    if (request.stream !== undefined) {
+      result.stream = request.stream;
+    }
+    if (request.think !== undefined) {
+      result.think = request.think;
+    }
+    if (request.format !== undefined) {
+      result.format = request.format;
+    }
+
+    return result;
   }
 
   protected convertMessages(messages: BaseChatMessage[]): Message[] {

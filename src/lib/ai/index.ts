@@ -268,6 +268,7 @@ class AIManager {
           id: m.id,
           name: m.displayName,
           displayName: m.displayName,
+          display_name: m.displayName,
           description: m.description || 'Code generation model',
           provider: 'Ollama',
           context_length: m.contextWindow || 4096,

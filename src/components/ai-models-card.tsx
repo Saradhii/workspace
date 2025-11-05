@@ -69,10 +69,10 @@ const Skeleton = () => {
           <QwenLogo className="h-[20.8px] w-[20.8px]" />
         </Container>
         <Container className="h-[62.4px] w-[62.4px] circle-2">
-          <GemmaLogo className="h-[31.2px] w-[31.2px]" />
+          <OpenAILogo className="h-[31.2px] w-[31.2px] dark:text-white" />
         </Container>
         <Container className="h-[83.2px] w-[83.2px] circle-3">
-          <OpenAILogo className="h-[41.6px] w-[41.6px] dark:text-white" />
+          <GemmaLogo className="h-[52px] w-[52px]" />
         </Container>
         <Container className="h-[62.4px] w-[62.4px] circle-4">
           <MetaIconOutline className="h-[31.2px] w-[31.2px]" />

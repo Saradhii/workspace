@@ -5,6 +5,8 @@ export interface BaseModel {
   displayName: string;
   description: string;
   provider: string;
+  // Computed property for display_name (snake_case) to maintain compatibility
+  display_name?: string;
 }
 
 // Extend base interfaces with BaseModel
@@ -17,7 +19,7 @@ export interface CodeModel extends BaseModel {
   context_length: number;
   specialty?: string;
   supports_reasoning?: boolean;
-  display_name?: string; // Deprecated alias for displayName
+  display_name: string; // Required for backward compatibility
 }
 
 export interface ImageModel extends BaseModel {

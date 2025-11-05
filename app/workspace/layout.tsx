@@ -2,6 +2,7 @@
 
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/aceternity-sidebar-v2";
 import { DotBackground } from "@/components/ui/dot-background";
+// import { GridBackground } from "@/components/ui/grid-background";
 import {
   IconArrowLeft,
   IconBrandTabler,
@@ -80,6 +81,7 @@ import { Code } from "lucide-react";
   return (
     <div className="relative flex w-full h-screen overflow-hidden bg-black/[0.96] antialiased">
       <DotBackground />
+      {/* <GridBackground /> */}
       {/* <GlowingStarsBackground /> */}
       <Sidebar className="relative z-10">
         <SidebarBody className="justify-between gap-10">

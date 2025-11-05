@@ -9,6 +9,7 @@ import type { Attachment } from "@/lib/types";
 import { generateVideo, getUserSession, type VideoGenerationRequest } from "@/lib/api";
 import type { VideoGenerationResponse } from "@/types/api";
 import type { ChatMessage } from "@/lib/types";
+import type { VideoParams } from "@/types/components";
 import { Button } from "@/components/ui/button";
 import { Download, Video as VideoIcon } from "lucide-react";
 
@@ -33,6 +34,15 @@ export default function VideoCreation() {
     guidanceScale: 1.0,
     seed: 42,
   });
+
+  // Wrapper to handle partial updates
+  const updateVideoParams = (update: Partial<VideoParams> | ((prev: VideoParams) => VideoParams)) => {
+    if (typeof update === 'function') {
+      setVideoParams(update);
+    } else {
+      setVideoParams(prev => ({ ...prev, ...update }));
+    }
+  };
 
   // Get user session on mount
   useEffect(() => {
@@ -274,7 +284,7 @@ export default function VideoCreation() {
             selectedModelId={selectedModelId}
             onSuggestionClick={handleSuggestionClick}
             videoParams={videoParams}
-            setVideoParams={setVideoParams}
+            setVideoParams={updateVideoParams}
           />
         </div>
       </div>

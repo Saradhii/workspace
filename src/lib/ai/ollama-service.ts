@@ -268,8 +268,6 @@ export class OllamaAIService {
       yield {
         type: 'error',
         error: error instanceof Error ? error.message : 'Code stream failed',
-        model: params.model || 'qwen3-coder:480b',
-        language: params.language || 'javascript',
       };
     }
   }

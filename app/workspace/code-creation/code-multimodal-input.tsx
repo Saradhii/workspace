@@ -1,7 +1,13 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, memo, useMemo } from "react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  ArrowUpIcon,
+  StopIcon,
+} from "../image-creation/icons";
 import {
   PromptInput,
   PromptInputTextarea,
@@ -10,59 +16,40 @@ import {
   PromptInputSubmit,
 } from "../image-creation/elements/prompt-input";
 import { Context } from "../image-creation/elements/context";
-import { Select, SelectContent, SelectTrigger, SelectItem } from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { List } from "lucide-react";
-import { CodeModelSelectorModal } from "./model-selector-modal";
-import type { CodeModel } from "@/types/models";
-
-// Language options
-const languages = [
-  { id: "javascript", name: "JavaScript", icon: "⚡" },
-  { id: "python", name: "Python", icon: "🐍" },
-  { id: "typescript", name: "TypeScript", icon: "📘" },
-  { id: "java", name: "Java", icon: "☕" },
-  { id: "cpp", name: "C++", icon: "⚙️" },
-  { id: "html", name: "HTML", icon: "🌐" },
-  { id: "css", name: "CSS", icon: "🎨" },
-  { id: "sql", name: "SQL", icon: "🗃️" },
-  { id: "json", name: "JSON", icon: "📄" },
-  { id: "bash", name: "Bash", icon: "💻" },
-  { id: "powershell", name: "PowerShell", icon: "💪" },
-];
+import { ModelSelectorModal } from "../image-creation/model-selector-modal";
+import { SuggestedActions } from "./suggested-actions";
+import type { CodeModel } from "@/lib/api";
 
 interface CodeMultimodalInputProps {
   input: string;
   setInput: (value: string) => void;
   status: "ready" | "submitted" | "streaming" | "error";
-  selectedLanguage: string;
-  onLanguageChange: (language: string) => void;
-  showLineNumbers: boolean;
-  onToggleLineNumbers: (value: boolean) => void;
   sendMessage: () => void;
   onClearChat?: () => void;
   selectedModel: string;
   onModelChange: (model: string) => void;
   models: CodeModel[];
   onSuggestionClick: (suggestion: string) => void;
+  className?: string;
 }
 
-export function CodeMultimodalInput({
+function PureCodeMultimodalInput({
   input,
   setInput,
   status,
-  selectedLanguage,
-  onLanguageChange,
-  showLineNumbers,
-  onToggleLineNumbers,
   sendMessage,
-  onClearChat,
   selectedModel,
+  className,
   onModelChange,
-  models: availableModels,
   onSuggestionClick,
+  models,
 }: CodeMultimodalInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const contextProps = useMemo(
+    () => ({}),
+    []
+  );
 
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
@@ -77,122 +64,104 @@ export function CodeMultimodalInput({
     adjustHeight();
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      sendMessage();
+  const submitForm = useCallback(() => {
+    if (!input.trim()) {
+      toast.error("Please enter a prompt");
+      return;
     }
-  };
+    sendMessage();
+  }, [input, sendMessage]);
 
-  
   return (
-    <PromptInput
-      className="rounded-xl border border-border bg-background p-3 shadow-xs transition-all duration-200 focus-within:border-border"
-      style={{ height: "120px" }}
-      onSubmit={(event) => {
-        event.preventDefault();
-        if (status !== "ready") {
-          return;
-        }
-        sendMessage();
-      }}
-    >
-      <div className="flex flex-col space-y-4">
-        {/* Top toolbar with language and model selection */}
-        <PromptInputToolbar className="!border-top-0 border-b-0">
-          <PromptInputTools>
-            {/* Model selector */}
-            <CodeModelSelectorModal
-              selectedModel={selectedModel}
-              onSelectionChange={onModelChange}
-              models={availableModels}
-            />
+    <div className={cn("relative flex w-full flex-col gap-4", className)}>
+      {status === "ready" && onSuggestionClick && (
+        <SuggestedActions
+          onActionClick={onSuggestionClick}
+        />
+      )}
 
-            {/* Language selector */}
-            <Select value={selectedLanguage} onValueChange={onLanguageChange}>
-              <SelectTrigger className="w-32">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{languages.find(l => l.id === selectedLanguage)?.icon}</span>
-                  <span className="text-xs text-muted-foreground ml-1">
-                    {languages.find(l => l.id === selectedLanguage)?.name || "Language"}
-                  </span>
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {languages.map((language) => (
-                  <SelectItem key={language.id} value={language.id}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">{language.icon}</span>
-                      <span>{language.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Line numbers toggle */}
-            <ToggleGroup type="single" value={showLineNumbers ? 'true' : 'false'} onValueChange={(value) => onToggleLineNumbers(value === 'true')}>
-              <ToggleGroupItem value="true">
-                <div className="flex items-center gap-2">
-                  <List className="h-4 w-4" />
-                  <span className="text-sm">Line Numbers</span>
-                </div>
-              </ToggleGroupItem>
-              <ToggleGroupItem value="false">
-                <span className="text-sm">No Line Numbers</span>
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </PromptInputTools>
-        </PromptInputToolbar>
-
-        {/* Text area */}
-        <div className="flex flex-col gap-2">
+      <PromptInput
+        className="rounded-xl border border-border bg-background p-3 shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50 w-full"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (status !== "ready") {
+            toast.error("Please wait for the model to finish its response!");
+          } else {
+            submitForm();
+          }
+        }}
+      >
+        <div className="flex flex-row items-start gap-1 sm:gap-2">
           <PromptInputTextarea
-            ref={textareaRef}
-            value={input}
+            autoFocus
+            className="grow resize-none border-0! border-none! bg-transparent p-2 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
+            data-testid="multimodal-input"
+            disableAutoResize={true}
+            maxHeight={60}
+            minHeight={44}
             onChange={handleInput}
-            onKeyDown={handleKeyDown}
             placeholder="Describe the code you want to generate..."
-            disabled={status === "streaming"}
-            className="min-h-[120px] resize-none border-0 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:ring-inset focus:ring-border"
-            style={{
-              fontFamily: '"Monaco", "Menlo", "DejaVu Sans Mono", monospace',
-              fontSize: showLineNumbers ? "13px" : "14px",
-              lineHeight: showLineNumbers ? "1.5" : "1.4",
-            } as React.CSSProperties}
-            spellCheck={false}
-          />
+            ref={textareaRef}
+            rows={1}
+            value={input}
+          />{" "}
+          <Context {...contextProps} />
         </div>
-      </div>
+        <PromptInputToolbar className="!border-top-0 border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
+          <PromptInputTools className="gap-0 sm:gap-0.5">
+            <ModelSelectorModal
+              selectedModels={[selectedModel ?? ""]}
+              onSelectionChange={(models) => onModelChange?.(models[0] ?? "")}
+              models={models.map(m => ({
+                id: m.id,
+                name: m.name,
+                displayName: m.displayName,
+                description: m.description,
+                provider: m.provider,
+                color: 'text-gray-600'
+              }))}
+              title="Select Code Generation Model"
+            />
+          </PromptInputTools>
 
-      {/* Bottom toolbar */}
-      <PromptInputToolbar className="!border-t-0 border-t-0">
-        <PromptInputTools>
-          <div className="flex items-center gap-2 ml-auto">
-            {/* Character count */}
-            <span className="text-xs text-muted-foreground">
-              {input.length} characters
-            </span>
+          <div className="flex items-center gap-2">
+            {status === "submitted" || status === "streaming" ? (
+              <StopButton stop={() => {}} />
+            ) : (
+              <PromptInputSubmit
+                className="size-8 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+                disabled={!input.trim()}
+                status={status}
+              >
+                <ArrowUpIcon size={14} />
+              </PromptInputSubmit>
+            )}
           </div>
-          {status === "submitted" || status === "streaming" ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClearChat}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Clear
-            </Button>
-          ) : (
-            <PromptInputSubmit
-              className="size-8 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
-              disabled={!input.trim() || status !== "ready"}
-            >
-              <Context className="size-5" />
-            </PromptInputSubmit>
-          )}
-        </PromptInputTools>
-      </PromptInputToolbar>
-    </PromptInput>
+        </PromptInputToolbar>
+      </PromptInput>
+    </div>
   );
 }
+
+function PureStopButton({
+  stop,
+}: {
+  stop: () => void;
+}) {
+  return (
+    <Button
+      className="size-7 rounded-full bg-foreground p-1 text-background transition-colors duration-200 hover:bg-foreground/90 disabled:bg-muted disabled:text-muted-foreground"
+      data-testid="stop-button"
+      onClick={(event) => {
+        event.preventDefault();
+        stop();
+      }}
+    >
+      <StopIcon size={14} />
+    </Button>
+  );
+}
+
+const StopButton = memo(PureStopButton);
+
+export const CodeMultimodalInput = memo(PureCodeMultimodalInput);

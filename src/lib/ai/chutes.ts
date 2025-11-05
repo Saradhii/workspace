@@ -102,7 +102,7 @@ export class ChutesService {
         width: params.width || 1024,
         height: params.height || 1024,
         generation_time_ms: 0,
-        parameters: params,
+        parameters: params as unknown as Record<string, unknown>,
         model_used: params.model || 'chroma',
         seed_used: params.seed || 0,
       };
@@ -321,7 +321,7 @@ export class ChutesService {
         fps: params.fps || 16,
         duration: (params.frames || 21) / (params.fps || 16),
         generation_time_ms: 0,
-        parameters: params,
+        parameters: params as unknown as Record<string, unknown>,
         model_used: 'wan-2-2-i2v-14b-fast',
         seed_used: params.seed || -1,
         created_at: new Date().toISOString(),

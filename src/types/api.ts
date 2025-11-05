@@ -55,7 +55,7 @@ export interface DocumentInfo {
   created_at: string;
   updated_at: string;
   chunk_count?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface CollectionStats {
@@ -81,7 +81,7 @@ export interface AIStatus {
   };
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -172,7 +172,7 @@ export interface ImageGenerationResponse {
   width: number;
   height: number;
   generation_time_ms: number;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   model_used: string;
   seed_used: number;
   error?: string;
@@ -199,7 +199,7 @@ export interface ImageGenerationStreamEvent {
   image_base64?: string;
   generation_time_ms?: number;
   error?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 export interface ImageModel {
@@ -214,7 +214,7 @@ export interface ImageModel {
 
 export interface ImageListResponse {
   success: boolean;
-  images: Record<string, any>[];
+  images: Record<string, unknown>[];
   total: number;
   page: number;
   page_size: number;
@@ -227,7 +227,7 @@ export interface UserImageStats {
   favorite_model: string;
   average_generation_time_ms: number;
   most_used_size: Record<string, number>;
-  generation_history: Record<string, any>[];
+  generation_history: Record<string, unknown>[];
 }
 
 // ===================================
@@ -261,7 +261,7 @@ export interface VideoGenerationResponse {
   duration: number;
   file_size?: number;
   generation_time_ms: number;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   model_used: string;
   seed_used: number;
   error?: string;
@@ -281,7 +281,7 @@ export interface VideoGenerationStreamEvent {
   video_base64?: string;
   generation_time_ms?: number;
   error?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 export interface VideoModel {
@@ -303,7 +303,7 @@ export interface VideoModelsResponse {
 
 export interface VideoListResponse {
   success: boolean;
-  videos: Record<string, any>[];
+  videos: Record<string, unknown>[];
   total: number;
   page: number;
   page_size: number;
@@ -317,7 +317,7 @@ export interface UserVideoStats {
   average_generation_time_ms: number;
   average_duration_seconds: number;
   most_used_frame_count: number;
-  generation_history: Record<string, any>[];
+  generation_history: Record<string, unknown>[];
 }
 
 export interface VideoUploadRequest {

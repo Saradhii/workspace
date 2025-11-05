@@ -12,9 +12,10 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { CpuIcon, ChevronDownIcon } from "../image-creation/icons";
-
-// Import CodeModel from models
 import type { CodeModel } from '@/types/models';
+
+// Re-export for convenience
+export type { CodeModel } from '@/types/models';
 
 interface ModelSelectorModalProps {
   selectedModel: string;
@@ -45,7 +46,7 @@ export function CodeModelSelectorModal({
 
   const getSelectedModelInfo = () => {
     const model = models.find(m => m.id === selectedModel);
-    return model ? model.displayName : "Select model";
+    return model ? model.display_name : "Select model";
   };
 
   return (
@@ -85,7 +86,7 @@ export function CodeModelSelectorModal({
                       htmlFor={model.id}
                       className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                     >
-                      {model.displayName}
+                      {model.display_name}
                       {model.specialty === "code_generation" && (
                         <span className="ml-2 rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                           Best for Code

@@ -17,7 +17,7 @@ export const GemmaLogo = ({ className }: { className?: string }) => {
 };
 
 export const OpenAILogo = ({ className }: { className?: string }) => {
-  return <OpenAI className={className} />;
+  return <OpenAI className={className} style={{ color: OpenAI.colorGpt3 }} />;
 };
 
 export const MetaIconOutline = ({ className }: { className?: string }) => {
