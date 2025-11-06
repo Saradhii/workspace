@@ -17,7 +17,6 @@ import {
 } from "../image-creation/elements/prompt-input";
 import { Context } from "../image-creation/elements/context";
 import { ModelSelectorModal } from "../image-creation/model-selector-modal";
-import { SuggestedActions } from "./suggested-actions";
 import type { CodeModel } from "@/lib/api";
 
 interface CodeMultimodalInputProps {
@@ -29,7 +28,6 @@ interface CodeMultimodalInputProps {
   selectedModel: string;
   onModelChange: (model: string) => void;
   models: CodeModel[];
-  onSuggestionClick: (suggestion: string) => void;
   className?: string;
 }
 
@@ -41,7 +39,6 @@ function PureCodeMultimodalInput({
   selectedModel,
   className,
   onModelChange,
-  onSuggestionClick,
   models,
 }: CodeMultimodalInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -74,12 +71,6 @@ function PureCodeMultimodalInput({
 
   return (
     <div className={cn("relative flex w-full flex-col gap-4", className)}>
-      {status === "ready" && onSuggestionClick && (
-        <SuggestedActions
-          onActionClick={onSuggestionClick}
-        />
-      )}
-
       <PromptInput
         className="rounded-xl border border-border bg-background p-3 shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50 w-full"
         onSubmit={(event) => {

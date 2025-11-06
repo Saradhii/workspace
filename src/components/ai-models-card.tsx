@@ -2,7 +2,7 @@
 import { animate } from "framer-motion";
 import React, { useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { QwenLogo, MistralLogo, OpenAILogo, GemmaLogo, MetaIconOutline } from "./ai-logos";
+import { QwenLogo, MistralLogo, DeepSeekLogo, GemmaLogo, MetaIconOutline } from "./ai-logos";
 
 export default function AIModelsCard() {
   return <Skeleton />;
@@ -66,19 +66,19 @@ const Skeleton = () => {
     <div className="p-8 overflow-hidden relative flex items-center justify-center">
       <div className="flex flex-row shrink-0 justify-center items-center gap-3">
         <Container className="h-[41.6px] w-[41.6px] circle-1">
-          <QwenLogo className="h-[20.8px] w-[20.8px]" />
+          <DeepSeekLogo className="h-[20.8px] w-[20.8px] dark:text-white" />
         </Container>
         <Container className="h-[62.4px] w-[62.4px] circle-2">
-          <OpenAILogo className="h-[31.2px] w-[31.2px] dark:text-white" />
+          <MistralLogo className="h-[31.2px] w-[31.2px]" />
         </Container>
         <Container className="h-[83.2px] w-[83.2px] circle-3">
           <GemmaLogo className="h-[52px] w-[52px]" />
         </Container>
         <Container className="h-[62.4px] w-[62.4px] circle-4">
-          <MetaIconOutline className="h-[31.2px] w-[31.2px]" />
+          <QwenLogo className="h-[31.2px] w-[31.2px]" />
         </Container>
         <Container className="h-[41.6px] w-[41.6px] circle-5">
-          <MistralLogo className="h-[20.8px] w-[20.8px]" />
+          <MetaIconOutline className="h-[20.8px] w-[20.8px]" />
         </Container>
       </div>
     </div>

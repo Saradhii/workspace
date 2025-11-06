@@ -2,7 +2,7 @@ import React from "react";
 import {
   Qwen,
   Gemma,
-  OpenAI,
+  DeepSeek,
   Meta,
   Mistral,
   Grok
@@ -16,8 +16,8 @@ export const GemmaLogo = ({ className }: { className?: string }) => {
   return <Gemma.Color className={className} />;
 };
 
-export const OpenAILogo = ({ className }: { className?: string }) => {
-  return <OpenAI className={className} style={{ color: OpenAI.colorGpt3 }} />;
+export const DeepSeekLogo = ({ className }: { className?: string }) => {
+  return <DeepSeek.Color className={className} />;
 };
 
 export const MetaIconOutline = ({ className }: { className?: string }) => {
