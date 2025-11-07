@@ -24,7 +24,7 @@ export default function VideoCreation() {
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const chatId = "video-creation-chat";
-  const selectedModelId = "gpt-4";
+  const selectedModelId = "wan-2-2-i2v-14b-fast";
 
   // Video parameters with defaults
   const [videoParams, setVideoParams] = useState({
@@ -258,8 +258,18 @@ export default function VideoCreation() {
                     Upload an image and describe the motion you want to create
                   </p>
                 </div>
+                <div className="text-left bg-muted/50 rounded-lg p-4 mt-4">
+                  <h4 className="font-medium mb-2">Quick Tips:</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Upload a clear, high-quality image</li>
+                    <li>• Describe simple, subtle motions</li>
+                    <li>• Use fewer frames for faster generation</li>
+                    <li>• Enable Fast Mode for quicker results</li>
+                  </ul>
+                </div>
               </div>
             )}
+          </div>
         </div>
         <div className="max-w-3xl mx-auto p-4">
           <VideoMultimodalInput
@@ -284,7 +294,6 @@ export default function VideoCreation() {
             videoParams={videoParams}
             setVideoParams={updateVideoParams}
           />
-        </div>
         </div>
       </div>
   );

@@ -143,8 +143,10 @@ export default function CodeCreation() {
           );
         } else if (event.type === 'start') {
           // Stream started
+          console.log('[CODE STREAM] Started');
         } else if (event.type === 'done') {
           // Final response
+          console.log('[CODE STREAM] Completed');
           setMessages(prev =>
             prev.map(msg =>
               msg.id === assistantMessage.id
@@ -155,7 +157,18 @@ export default function CodeCreation() {
           setGeneratedCode(accumulatedContent);
           break;
         } else if (event.type === 'error') {
-          throw new Error(event.error || 'Generation failed');
+          console.error('[CODE STREAM] Error:', event.error);
+          const errorMessage = event.error || 'Code generation failed';
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === assistantMessage.id
+                ? { ...msg, content: `Sorry, I encountered an error: ${errorMessage}`, isTyping: false }
+                : msg
+            )
+          );
+          setStatus("error");
+          toast.error(errorMessage);
+          break;
         }
       }
 
@@ -359,7 +372,7 @@ export default function CodeCreation() {
                         onClick={() => {
                           setInput(suggestion.action);
                           // Auto-submit after setting input
-                          setTimeout(() => {
+                          setTimeout(async () => {
                             if (!userId) return;
 
                             setIsGenerating(true);
@@ -386,14 +399,16 @@ export default function CodeCreation() {
                             setStatus("streaming");
 
                             // Generate code
-                            generateCodeStream({
-                              prompt: suggestion.action,
-                              language: "javascript",
-                              model: selectedModelId,
-                              temperature: 0.3,
-                              max_tokens: 4000,
-                              ...(userId && { user_id: userId }),
-                            }).then(async (stream) => {
+                            try {
+                              const stream = generateCodeStream({
+                                prompt: suggestion.action,
+                                language: "javascript",
+                                model: selectedModelId,
+                                temperature: 0.3,
+                                max_tokens: 4000,
+                                ...(userId && { user_id: userId }),
+                              });
+
                               let accumulatedContent = '';
 
                               for await (const event of stream) {
@@ -421,7 +436,7 @@ export default function CodeCreation() {
                                   throw new Error(event.error || 'Generation failed');
                                 }
                               }
-                            }).catch((error) => {
+                            } catch (error) {
                               console.error('Error generating code:', error);
                               const errorMessage = error instanceof Error ? error.message : 'Failed to generate code';
 
@@ -434,10 +449,10 @@ export default function CodeCreation() {
                               );
                               setStatus("error");
                               toast.error(errorMessage);
-                            }).finally(() => {
+                            } finally {
                               setIsGenerating(false);
                               setStatus("ready");
-                            });
+                            }
                           }, 100);
                         }}
                         className="group flex items-start gap-3 p-4 rounded-lg border border-border bg-background hover:bg-muted/50 transition-all duration-200 text-left"
