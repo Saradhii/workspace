@@ -12,6 +12,7 @@ import type { ChatMessage } from "@/lib/types";
 import type { VideoParams } from "@/types/components";
 import { Button } from "@/components/ui/button";
 import { Download, Video as VideoIcon } from "lucide-react";
+import { StickyBanner } from "@/components/ui/sticky-banner";
 
 export default function VideoCreation() {
   const [input, setInput] = useState("");
@@ -154,9 +155,15 @@ export default function VideoCreation() {
   };
 
   return (
-    <div className="flex h-full flex-col">
-        {/* Content Area - Generated Video Display */}
-        <div className="flex-1 flex items-center justify-center p-8">
+    <div className="flex h-full flex-col -m-4 md:-m-8">
+        <StickyBanner className="bg-gradient-to-b from-blue-500 to-blue-600">
+          <p className="mx-0 max-w-[90%] text-white drop-shadow-md">
+            Out of API credits. BYOK supported - bring your own key to continue.
+          </p>
+        </StickyBanner>
+        <div className="flex-1 flex flex-col overflow-y-auto p-4 md:p-8">
+          {/* Content Area - Generated Video Display */}
+          <div className="flex-1 flex items-center justify-center p-8">
             {isGenerating && (
               <div className="flex flex-col items-center gap-4">
                 <VideoLoadingCard />
@@ -251,15 +258,6 @@ export default function VideoCreation() {
                     Upload an image and describe the motion you want to create
                   </p>
                 </div>
-                <div className="text-left bg-muted/50 rounded-lg p-4 mt-4">
-                  <h4 className="font-medium mb-2">Quick Tips:</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Upload a clear, high-quality image</li>
-                    <li>• Describe simple, subtle motions</li>
-                    <li>• Use fewer frames for faster generation</li>
-                    <li>• Enable Fast Mode for quicker results</li>
-                  </ul>
-                </div>
               </div>
             )}
         </div>
@@ -286,6 +284,7 @@ export default function VideoCreation() {
             videoParams={videoParams}
             setVideoParams={updateVideoParams}
           />
+        </div>
         </div>
       </div>
   );
