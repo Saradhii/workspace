@@ -27,7 +27,7 @@ export default function CodeCreation() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [selectedModelId, setSelectedModelId] = useState("zai-org/GLM-4.5-Air");
+  const [selectedModelId, setSelectedModelId] = useState("z-ai/glm-4.5-air:free");
   const [availableModels, setAvailableModels] = useState<CodeModel[]>([]);
   const chatId = "code-creation-chat";
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -47,35 +47,38 @@ export default function CodeCreation() {
         // Load available models
         const modelsResponse = await getCodeModels();
         if (modelsResponse.success && modelsResponse.models) {
-          // Filter to only 2 models: GLM 4.5 Air and one other
+          // Filter to free coding-focused models
           const filteredModels = modelsResponse.models.filter(model =>
-            model.id === "zai-org/GLM-4.5-Air" ||
-            model.id.includes("qwen") ||
-            model.id.includes("deepseek")
+            model.id.endsWith(":free") && (
+              model.id.includes("glm") ||
+              model.id.includes("qwen") && model.id.includes("coder") ||
+              model.id.includes("deepseek") ||
+              model.id.includes("minimax")
+            )
           ).slice(0, 2);
           setAvailableModels(filteredModels);
         }
       } catch (error) {
         console.error("Failed to load models:", error);
-        // Set default models if API fails (only 2 models)
+        // Set default free models if API fails
         setAvailableModels([
           {
-            id: "zai-org/GLM-4.5-Air",
-            name: "glm-4.5-air",
-            displayName: "GLM 4.5 Air",
-            description: "Advanced coding assistant with excellent code generation capabilities",
+            id: "z-ai/glm-4.5-air:free",
+            name: "glm-4.5-air-free",
+            displayName: "GLM 4.5 Air (Free)",
+            description: "Advanced free coding assistant",
             provider: "Zhipu AI",
             context_length: 128000,
-            display_name: "GLM 4.5 Air",
+            display_name: "GLM 4.5 Air (Free)",
           },
           {
-            id: "deepseek-ai/DeepSeek-Coder-V2-Instruct",
-            name: "deepseek-coder-v2",
-            displayName: "DeepSeek Coder V2",
-            description: "Powerful code generation model",
-            provider: "DeepSeek",
+            id: "qwen/qwen3-coder:free",
+            name: "qwen3-coder-free",
+            displayName: "Qwen3 Coder (Free)",
+            description: "Free powerful code generation model",
+            provider: "Qwen",
             context_length: 128000,
-            display_name: "DeepSeek Coder V2",
+            display_name: "Qwen3 Coder (Free)",
           }
         ]);
       }
@@ -421,7 +424,10 @@ export default function CodeCreation() {
                                         : msg
                                     )
                                   );
+                                } else if (event.type === 'start') {
+                                  console.log('[CODE STREAM] Suggestion started');
                                 } else if (event.type === 'done') {
+                                  console.log('[CODE STREAM] Suggestion completed');
                                   setMessages(prev =>
                                     prev.map(msg =>
                                       msg.id === assistantMessage.id
@@ -433,7 +439,18 @@ export default function CodeCreation() {
                                   scrollToBottom();
                                   break;
                                 } else if (event.type === 'error') {
-                                  throw new Error(event.error || 'Generation failed');
+                                  console.error('[CODE STREAM] Suggestion error:', event.error);
+                                  const errorMessage = event.error || 'Code generation failed';
+                                  setMessages(prev =>
+                                    prev.map(msg =>
+                                      msg.id === assistantMessage.id
+                                        ? { ...msg, content: `Sorry, I encountered an error: ${errorMessage}`, isTyping: false }
+                                        : msg
+                                    )
+                                  );
+                                  setStatus("error");
+                                  toast.error(errorMessage);
+                                  break;
                                 }
                               }
                             } catch (error) {

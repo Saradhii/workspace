@@ -19,23 +19,49 @@ export async function POST(request: NextRequest) {
 
     const streamResponse = new ReadableStream({
       async start(controller) {
+        let isClosed = false;
         try {
           for await (const chunk of stream) {
-            const data = `data: ${JSON.stringify(chunk)}\n\n`;
-            controller.enqueue(encoder.encode(data));
+            if (isClosed) break;
+            try {
+              const data = `data: ${JSON.stringify(chunk)}\n\n`;
+              controller.enqueue(encoder.encode(data));
+            } catch (enqueueError) {
+              console.error('Failed to enqueue chunk:', enqueueError);
+              isClosed = true;
+              break;
+            }
           }
           // Send [DONE] to signal end
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          if (!isClosed) {
+            try {
+              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            } catch (e) {
+              console.error('Failed to send [DONE]:', e);
+            }
+          }
         } catch (error) {
           console.error('Code streaming error:', error);
-          const errorChunk = {
-            type: 'error',
-            error: error instanceof Error ? error.message : 'Code streaming failed',
-          };
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(errorChunk)}\n\n`));
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          if (!isClosed) {
+            try {
+              const errorChunk = {
+                type: 'error',
+                error: error instanceof Error ? error.message : 'Code streaming failed',
+              };
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(errorChunk)}\n\n`));
+              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            } catch (e) {
+              console.error('Failed to send error:', e);
+            }
+          }
         } finally {
-          controller.close();
+          if (!isClosed) {
+            try {
+              controller.close();
+            } catch (e) {
+              console.error('Failed to close controller:', e);
+            }
+          }
         }
       },
     });

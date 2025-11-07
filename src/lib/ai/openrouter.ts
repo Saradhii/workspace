@@ -197,7 +197,7 @@ export class OpenRouterService {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify({
-          model: params.model || 'zai-org/GLM-4.5-Air',
+          model: params.model || 'z-ai/glm-4.5-air:free',
           messages,
           temperature: params.temperature || 0.3,
           max_tokens: params.max_tokens || 4000,
@@ -243,19 +243,33 @@ export class OpenRouterService {
         },
       ];
 
+      const requestBody = {
+        model: params.model || 'z-ai/glm-4.5-air:free',
+        messages,
+        temperature: params.temperature || 0.3,
+        max_tokens: params.max_tokens || 4000,
+        stream: true,
+      };
+
+      console.log('[OPENROUTER] Code generation request:', {
+        model: requestBody.model,
+        messageCount: messages.length,
+        hasApiKey: !!this.apiKey,
+      });
+
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: this.getHeaders(),
-        body: JSON.stringify({
-          model: params.model || 'zai-org/GLM-4.5-Air',
-          messages,
-          temperature: params.temperature || 0.3,
-          max_tokens: params.max_tokens || 4000,
-          stream: true,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[OPENROUTER] Code generation failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText,
+        });
         throw new Error(`Code generation streaming failed: ${response.statusText}`);
       }
 
@@ -299,11 +313,19 @@ export class OpenRouterService {
               const parsed = JSON.parse(data);
               const delta = parsed.choices?.[0]?.delta;
 
-              if (delta?.content) {
-                accumulatedCode += delta.content;
+              // GLM models return content in 'reasoning' field, others use 'content'
+              const contentChunk = delta?.content || delta?.reasoning || '';
+
+              if (contentChunk) {
+                console.log('[OPENROUTER] Code chunk received:', {
+                  hasContent: !!delta?.content,
+                  hasReasoning: !!delta?.reasoning,
+                  length: contentChunk.length
+                });
+                accumulatedCode += contentChunk;
                 yield {
                   type: 'content',
-                  content: delta.content,
+                  content: contentChunk,
                 };
               }
             } catch (e) {
@@ -431,15 +453,15 @@ export class OpenRouterService {
           supports_reasoning: model.id.includes('reasoning') || false,
         }));
 
-      // Always include GLM-4.5-Air as it's the primary code model
-      if (!codeModels.find(m => m.id === 'zai-org/GLM-4.5-Air')) {
+      // Always include GLM-4.5-Air Free as it's the primary free code model
+      if (!codeModels.find(m => m.id === 'z-ai/glm-4.5-air:free')) {
         codeModels.unshift({
-          id: 'zai-org/GLM-4.5-Air',
+          id: 'z-ai/glm-4.5-air:free',
           name: 'GLM-4.5-Air',
           displayName: 'GLM-4.5-Air (Free)',
-          display_name: 'GLM-4.5-Air',
-          description: 'Zhipu AI\'s GLM-4.5-Air model optimized for code generation',
-          provider: 'zai-org',
+          display_name: 'GLM-4.5-Air (Free)',
+          description: 'Zhipu AI\'s free GLM-4.5-Air model optimized for code generation',
+          provider: 'z-ai',
           context_length: 8192,
           specialty: 'code',
           supports_reasoning: false,
