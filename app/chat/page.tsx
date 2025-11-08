@@ -9,7 +9,8 @@ import { SidebarInset, SidebarProvider, SidebarRail } from "@/components/ui/side
 import { ChatBubble } from "./components/chat-bubble";
 import type { VisibilityType } from "./components/visibility-selector";
 import type { Attachment } from "@/lib/types";
-import { queryRAGStream, type RAGSourceDocument, type AIStatus } from "@/lib/api";
+import { queryRAGStream, type RAGSourceDocument, type AIStatus, getTextModels } from "@/lib/api";
+import type { TextModel } from "@/types/models";
 
 interface ChatMessage {
   id: string;
@@ -20,6 +21,7 @@ interface ChatMessage {
   sources?: RAGSourceDocument[];
   aiStatus?: AIStatus;
   generatedWithAI?: boolean;
+  reasoning?: string; // For models with thinking capabilities
 }
 
 export default function ChatPage() {
@@ -30,8 +32,9 @@ export default function ChatPage() {
   const [selectedVisibilityType, setSelectedVisibilityType] = useState<VisibilityType>("private");
   const [uploadedDocs, setUploadedDocs] = useState<string[]>([]);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [selectedModelId, setSelectedModelId] = useState<string>("chutes:openai/gpt-oss-20b");
+  const [availableModels, setAvailableModels] = useState<TextModel[]>([]);
   const chatId = "default-chat";
-  const selectedModelId = "gpt-4";
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const stop = () => {
@@ -52,6 +55,116 @@ export default function ChatPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Load available models on mount
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        const modelsResponse = await getTextModels();
+        if (modelsResponse.success && modelsResponse.models) {
+          setAvailableModels(modelsResponse.models);
+        }
+      } catch (error) {
+        console.error("Failed to load models:", error);
+      }
+    };
+    loadModels();
+  }, []);
+
+  // Chat streaming function
+  const chatStream = async (
+    messages: { role: string; content: string }[],
+    modelId: string,
+    onChunk: (chunk: any) => void,
+    onError: (error: Error) => void,
+    onComplete: () => void
+  ) => {
+    try {
+      const response = await fetch('/api/ollama/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: modelId,
+          messages,
+          stream: true,
+          think: true, // Enable thinking for reasoning models
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Chat request failed: ${response.statusText}`);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      if (!reader) {
+        throw new Error('Response body is not readable');
+      }
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+
+            if (data === '[DONE]') {
+              onComplete();
+              return;
+            }
+
+            try {
+              const event = JSON.parse(data);
+
+              // Map Ollama events to our expected format
+              if (event.message) {
+                if (event.message.content) {
+                  onChunk({
+                    type: 'content',
+                    content: event.message.content,
+                  });
+                }
+                if (event.message.thinking) {
+                  onChunk({
+                    type: 'reasoning',
+                    content: event.message.thinking,
+                  });
+                }
+              }
+
+              if (event.type === 'complete') {
+                onChunk({
+                  type: 'done',
+                  reasoning: event.message?.thinking,
+                });
+                onComplete();
+                return;
+              } else if (event.type === 'error') {
+                throw new Error(event.error || 'Chat failed');
+              }
+            } catch (e) {
+              console.warn('Failed to parse SSE data:', data);
+            }
+          }
+        }
+      }
+
+      onComplete();
+    } catch (error) {
+      console.error('Error in chat streaming:', error);
+      onError(error as Error);
+    }
+  };
 
   
   const handleUploadComplete = (result: any) => {
@@ -87,22 +200,8 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, userMessage]);
     setStatus("submitted");
 
-    // Check if we have any uploaded documents
-    if (uploadedDocs.length === 0) {
-      // No documents uploaded, show a helpful message
-      setTimeout(() => {
-        const assistantMessage: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "Please upload a document first using the paperclip icon above. I'll then be able to answer questions about your documents!",
-          timestamp: new Date(),
-          isTyping: false,
-        };
-        setMessages((prev) => [...prev, assistantMessage]);
-        setStatus("ready");
-      }, 500);
-      return;
-    }
+    // For now, we'll use chat directly without requiring documents
+    // (You can re-enable document checking later if needed)
 
     // Create streaming assistant message
     const assistantMessage: ChatMessage = {
@@ -110,35 +209,38 @@ export default function ChatPage() {
       role: "assistant",
       content: "",
       timestamp: new Date(),
-      isTyping: false,
-      sources: [],
+      isTyping: true,
     };
     setMessages((prev) => [...prev, assistantMessage]);
     setStatus("streaming");
 
-    let sources: RAGSourceDocument[] = [];
     let accumulatedText = "";
+    let accumulatedReasoning = "";
 
     try {
-      // Query RAG system with streaming
-      await queryRAGStream(
-        content,
-        uploadedDocs,
+      // Use chat streaming
+      await chatStream(
+        [{ role: "user", content }],
+        selectedModelId,
         // onChunk
         (chunk) => {
           if (controller.signal.aborted) return;
 
-          if (chunk.type === 'sources') {
-            sources = (chunk.sources || []).map((s: any) => ({
-              content: s.content,
-              metadata: s.metadata
-            }));
-          } else if (chunk.type === 'content') {
-            accumulatedText = chunk.accumulated || (accumulatedText + chunk.content);
+          if (chunk.type === 'content') {
+            accumulatedText += chunk.content || "";
             setMessages((prev) =>
               prev.map((msg) =>
                 msg.id === assistantMessage.id
-                  ? { ...msg, content: accumulatedText, sources }
+                  ? { ...msg, content: accumulatedText }
+                  : msg
+              )
+            );
+          } else if (chunk.type === 'reasoning') {
+            accumulatedReasoning += chunk.content || "";
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessage.id
+                  ? { ...msg, reasoning: accumulatedReasoning, isTyping: true }
                   : msg
               )
             );
@@ -148,14 +250,16 @@ export default function ChatPage() {
                 msg.id === assistantMessage.id
                   ? {
                       ...msg,
-                      content: accumulatedText || "I couldn't find relevant information in your uploaded documents.",
-                      sources,
-                      generatedWithAI: chunk.generated_with_ai || false,
+                      content: accumulatedText,
+                      reasoning: chunk.reasoning || accumulatedReasoning,
+                      generatedWithAI: true,
                       aiStatus: {
                         enabled: true,
                         status: "success",
-                        service: "chutes"
-                      }
+                        service: "ollama",
+                        model: selectedModelId
+                      },
+                      isTyping: false
                     }
                   : msg
               )
@@ -176,7 +280,7 @@ export default function ChatPage() {
               msg.id === assistantMessage.id
                 ? {
                     ...msg,
-                    content: "Sorry, I encountered an error while searching your documents. Please make sure the backend server is running on localhost:8000.",
+                    content: `Sorry, I encountered an error: ${errorMessage}`,
                     isTyping: false
                   }
                 : msg
@@ -202,7 +306,7 @@ export default function ChatPage() {
           msg.id === assistantMessage.id
             ? {
                 ...msg,
-                content: "Sorry, I encountered an error while searching your documents. Please make sure the backend server is running on localhost:8000.",
+                content: `Sorry, I encountered an error: ${errorMessage}`,
                 isTyping: false
               }
             : msg
@@ -263,6 +367,8 @@ export default function ChatPage() {
                 }}
                 selectedVisibilityType={selectedVisibilityType}
                 selectedModelId={selectedModelId}
+                onModelChange={setSelectedModelId}
+                availableModels={availableModels}
                 onUploadComplete={handleUploadComplete}
                 onClearChat={clearChat}
               />

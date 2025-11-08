@@ -43,12 +43,7 @@ import { SuggestedActions } from "./suggested-actions";
 import { Button } from "@/components/ui/button";
 import type { VisibilityType } from "./visibility-selector";
 import { uploadDocument, type RAGUploadResponse } from "@/lib/api";
-
-// Dummy data for development
-const chatModels = [
-  { id: "gpt-4", name: "GPT-4", description: "Most capable model" },
-  { id: "gpt-3.5", name: "GPT-3.5 Turbo", description: "Fast and efficient" },
-];
+import type { TextModel } from "@/types/models";
 
 function PureMultimodalInput({
   chatId,
@@ -66,6 +61,8 @@ function PureMultimodalInput({
   selectedModelId,
   onModelChange,
   onUploadComplete,
+  availableModels,
+  onClearChat,
 }: {
   chatId: string;
   input: string;
@@ -83,6 +80,7 @@ function PureMultimodalInput({
   onModelChange?: (modelId: string) => void;
   onUploadComplete?: (result: RAGUploadResponse) => void;
   onClearChat?: () => void;
+  availableModels?: TextModel[];
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -327,6 +325,7 @@ function PureMultimodalInput({
             <ModelSelectorCompact
               {...(onModelChange && { onModelChange })}
               selectedModelId={selectedModelId}
+              availableModels={availableModels}
             />
           </PromptInputTools>
 
@@ -405,9 +404,11 @@ const AttachmentsButton = memo(PureAttachmentsButton);
 function PureModelSelectorCompact({
   selectedModelId,
   onModelChange,
+  availableModels,
 }: {
   selectedModelId: string;
   onModelChange?: (modelId: string) => void;
+  availableModels?: TextModel[];
 }) {
   const [optimisticModelId, setOptimisticModelId] = useState(selectedModelId);
 
@@ -415,14 +416,19 @@ function PureModelSelectorCompact({
     setOptimisticModelId(selectedModelId);
   }, [selectedModelId]);
 
-  const selectedModel = chatModels.find(
+  const selectedModel = availableModels?.find(
     (model) => model.id === optimisticModelId
-  );
+  ) || {
+    id: selectedModelId,
+    name: selectedModelId,
+    displayName: selectedModelId,
+    description: "Selected model"
+  };
 
   return (
     <PromptInputModelSelect
       onValueChange={(modelName) => {
-        const model = chatModels.find((m) => m.name === modelName);
+        const model = availableModels?.find((m) => m.displayName === modelName || m.name === modelName);
         if (model) {
           setOptimisticModelId(model.id);
           onModelChange?.(model.id);
@@ -432,7 +438,7 @@ function PureModelSelectorCompact({
           });
         }
       }}
-      {...(selectedModel?.name && { value: selectedModel.name })}
+      {...(selectedModel && { value: selectedModel.displayName || selectedModel.name })}
     >
       <Trigger
         className="flex h-8 items-center gap-2 rounded-lg border-0 bg-background px-2 text-foreground shadow-none transition-colors hover:bg-accent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -440,20 +446,30 @@ function PureModelSelectorCompact({
       >
         <CpuIcon size={16} />
         <span className="hidden font-medium text-xs sm:block">
-          {selectedModel?.name}
+          {selectedModel?.displayName || selectedModel?.name}
         </span>
         <ChevronDownIcon size={16} />
       </Trigger>
       <PromptInputModelSelectContent className="min-w-[260px] p-0">
         <div className="flex flex-col gap-px">
-          {chatModels.map((model) => (
-            <SelectItem key={model.id} value={model.name}>
-              <div className="truncate font-medium text-xs">{model.name}</div>
+          {availableModels?.map((model) => (
+            <SelectItem key={model.id} value={model.displayName || model.name}>
+              <div className="truncate font-medium text-xs">{model.displayName || model.name}</div>
               <div className="mt-px truncate text-[10px] text-muted-foreground leading-tight">
                 {model.description}
+                {model.supports_reasoning && (
+                  <span className="ml-1 text-purple-500">🧠</span>
+                )}
               </div>
             </SelectItem>
-          ))}
+          )) || (
+            <SelectItem value={selectedModelId}>
+              <div className="truncate font-medium text-xs">{selectedModelId}</div>
+              <div className="mt-px truncate text-[10px] text-muted-foreground leading-tight">
+                Loading models...
+              </div>
+            </SelectItem>
+          )}
         </div>
       </PromptInputModelSelectContent>
     </PromptInputModelSelect>

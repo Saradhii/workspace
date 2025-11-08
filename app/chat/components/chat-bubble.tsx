@@ -4,6 +4,10 @@ import { SparklesIcon, UserIcon, CopyIcon, PencilEditIcon, PaperclipIcon } from 
 import { Action, Actions } from "./elements/actions";
 import { cn } from "@/lib/utils";
 import type { RAGSourceDocument, AIStatus } from "@/lib/types";
+import { useState } from "react";
+import { Brain, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatBubbleProps {
   message: {
@@ -15,6 +19,7 @@ interface ChatBubbleProps {
     sources?: RAGSourceDocument[];
     aiStatus?: AIStatus;
     generatedWithAI?: boolean;
+    reasoning?: string;
   };
   className?: string;
 }
@@ -22,6 +27,13 @@ interface ChatBubbleProps {
 export function ChatBubble({ message, className }: ChatBubbleProps) {
   const isUser = message.role === "user";
   const isTyping = message.isTyping;
+  const [showReasoning, setShowReasoning] = useState(false);
+  const hasReasoning = message.reasoning && message.reasoning.trim() && !isUser;
+
+  // Auto-show reasoning when streaming starts for reasoning models
+  if (hasReasoning && isTyping && !showReasoning) {
+    setShowReasoning(true);
+  }
 
   const handleCopy = async () => {
     if (!message.content.trim()) {
@@ -81,13 +93,49 @@ export function ChatBubble({ message, className }: ChatBubbleProps) {
           </div>
         ) : (
           <div className="bg-transparent px-0 py-0 text-left leading-tight">
-            {isTyping ? (
+            {/* Reasoning Section - Show during streaming for reasoning models */}
+            {hasReasoning && (
+              <div className="mb-2" style={{ marginTop: '4.5px' }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowReasoning(!showReasoning)}
+                  className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground h-auto px-2 py-1"
+                >
+                  <Brain className="h-3 w-3" />
+                  <span>Thought process {isTyping && message.reasoning ? "(Streaming...)" : ""}</span>
+                  {showReasoning ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                </Button>
+                <AnimatePresence>
+                  {showReasoning && message.reasoning && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-2 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 p-3"
+                    >
+                      <div className="text-xs text-muted-foreground mb-1 font-mono">
+                        Thinking{isTyping ? " (Live)" : ":"}
+                      </div>
+                      <div className="whitespace-pre-wrap text-xs italic font-mono text-muted-foreground leading-relaxed">
+                        {message.reasoning}
+                        {isTyping && (
+                          <span className="inline-block w-2 h-3 ml-1 bg-current animate-pulse" />
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {isTyping && !hasReasoning ? (
               <div className="text-muted-foreground text-sm flex items-center gap-2" style={{ marginTop: '4.5px' }}>
                 <span className="inline-block w-2 h-2 bg-current rounded-full animate-pulse"></span>
                 Thinking...
               </div>
             ) : (
-              <div className="text-foreground leading-tight" style={{ marginTop: '4.5px' }}>
+              <div className="text-foreground leading-tight" style={{ marginTop: hasReasoning ? '4.5px' : '0' }}>
                 {/* AI Status Indicator */}
                 {message.generatedWithAI && message.aiStatus && (
                   <div className="inline-flex items-center gap-1.5 px-2 py-1 mb-2 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-md text-xs font-medium">
