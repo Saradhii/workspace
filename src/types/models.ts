@@ -7,6 +7,8 @@ export interface BaseModel {
   provider: string;
   // Computed property for display_name (snake_case) to maintain compatibility
   display_name?: string;
+  // Optional icon component for visual display
+  icon?: React.ComponentType<{ className?: string }>;
 }
 
 // Extend base interfaces with BaseModel

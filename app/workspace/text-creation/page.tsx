@@ -9,6 +9,13 @@ import { TracingBeam } from "@/components/ui/tracing-beam";
 import { getUserSession, generateTextStream, getTextModels } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { FileText, MessageCircle, Download } from "lucide-react";
+import {
+  MetaIconOutline,
+  TongyiLogo,
+  OpenAILogo,
+  GemmaLogo,
+  GenericAILogo
+} from "@/components/ai-logos";
 
 interface TextMessage {
   id: string;
@@ -17,6 +24,12 @@ interface TextMessage {
   timestamp: Date;
   isTyping?: boolean;
   reasoning?: string; // For models like Tongyi that show thinking process
+}
+
+interface TokenUsage {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
 }
 
 export default function TextCreation() {
@@ -29,6 +42,7 @@ export default function TextCreation() {
   const [userId, setUserId] = useState<string | null>(null);
   const [selectedModelId, setSelectedModelId] = useState("chutes:openai/gpt-oss-20b");
   const [availableModels, setAvailableModels] = useState<any[]>([]);
+  const [tokenUsage, setTokenUsage] = useState<TokenUsage | null>(null);
   const chatId = "text-creation-chat";
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -48,13 +62,35 @@ export default function TextCreation() {
         const modelsResponse = await getTextModels();
         if (modelsResponse.success && modelsResponse.models) {
           // Convert models to the format expected by ModelSelectorModal
-          const formattedModels = modelsResponse.models.map((model) => ({
-            id: model.id,
-            name: model.name,
-            displayName: model.displayName,
-            description: model.description,
-            color: "text-blue-500", // Default color
-          }));
+          const formattedModels = modelsResponse.models.map((model) => {
+            // Determine icon based on model name or provider
+            let icon = GenericAILogo; // Default icon
+            let color = "text-blue-500"; // Default color
+
+            if (model.name.toLowerCase().includes('llama') || model.provider.toLowerCase().includes('meta')) {
+              icon = MetaIconOutline;
+              color = "text-blue-600";
+            } else if (model.name.toLowerCase().includes('tongyi') || model.name.toLowerCase().includes('alibaba')) {
+              icon = TongyiLogo;
+              color = "text-orange-600";
+            } else if (model.name.toLowerCase().includes('gpt') || model.name.toLowerCase().includes('openai')) {
+              icon = OpenAILogo;
+              color = "text-green-600";
+            } else if (model.name.toLowerCase().includes('gemma') || model.provider.toLowerCase().includes('google')) {
+              icon = GemmaLogo;
+              color = "text-red-600";
+            }
+
+            return {
+              id: model.id,
+              name: model.name,
+              displayName: model.displayName,
+              description: model.description,
+              color: color,
+              context_length: model.context_length,
+              icon: icon,
+            };
+          });
           setAvailableModels(formattedModels);
         }
       } catch (error) {
@@ -66,6 +102,7 @@ export default function TextCreation() {
           displayName: "Llama 3.2 3B",
           description: "Fast and efficient small model",
           color: "text-blue-500",
+          icon: MetaIconOutline,
         }]);
       }
     };
@@ -102,6 +139,7 @@ export default function TextCreation() {
     setError(null);
     setGeneratedText(null);
     setStatus("submitted");
+    setTokenUsage(null);
 
     // Add user message
     const userMessage: TextMessage = {
@@ -161,6 +199,16 @@ export default function TextCreation() {
                 : msg
             )
           );
+        } else if (event.type === "usage") {
+          // Capture token usage from the stream
+          console.log("[STREAM] Usage data received:", event);
+          // Handle both formats: direct fields or nested usage object
+          const usageData = event.usage || event;
+          setTokenUsage({
+            prompt_tokens: usageData.prompt_tokens || 0,
+            completion_tokens: usageData.completion_tokens || 0,
+            total_tokens: usageData.total_tokens || 0,
+          });
         } else if (event.type === "done") {
           console.log("[STREAM] Stream completed");
           // Final response - set all final state
@@ -218,6 +266,7 @@ export default function TextCreation() {
     setError(null);
     setGeneratedText(null);
     setStatus("submitted");
+    setTokenUsage(null);
 
     // Add user message
     const userMessage: TextMessage = {
@@ -277,6 +326,16 @@ export default function TextCreation() {
                 : msg
             )
           );
+        } else if (event.type === "usage") {
+          // Capture token usage from the stream
+          console.log("[STREAM] Suggestion usage data received:", event);
+          // Handle both formats: direct fields or nested usage object
+          const usageData = event.usage || event;
+          setTokenUsage({
+            prompt_tokens: usageData.prompt_tokens || 0,
+            completion_tokens: usageData.completion_tokens || 0,
+            total_tokens: usageData.total_tokens || 0,
+          });
         } else if (event.type === "done") {
           console.log("[STREAM] Suggestion stream completed");
           // Final response - set all final state
@@ -340,6 +399,7 @@ export default function TextCreation() {
     setError(null);
     setInput("");
     setStatus("ready");
+    setTokenUsage(null);
   };
 
   // Download text
@@ -465,6 +525,7 @@ export default function TextCreation() {
             onSuggestionClick={handleSuggestionClick}
             onClearChat={handleClearChat}
             models={availableModels}
+            tokenUsage={tokenUsage}
           />
         </div>
     </div>

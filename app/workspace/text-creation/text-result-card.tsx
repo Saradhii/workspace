@@ -6,6 +6,7 @@ import { useState } from "react";
 import { User, Copy, Download, ChevronDown, ChevronUp, Brain, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 
 interface TextResultCardProps {
   message: {
@@ -115,11 +116,10 @@ export function TextResultCard({ message }: TextResultCardProps) {
             {/* Show content if it exists while typing */}
             {message.content ? (
               <div className="space-y-2">
-                <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
-                  {message.content}
-                  {/* Pulsing cursor at the end of streaming text */}
-                  <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" />
-                </div>
+                <MarkdownRenderer
+                  content={message.content}
+                  isTyping={true}
+                />
                 <div className="flex items-center gap-2 text-muted-foreground text-xs">
                   <div className="flex gap-1">
                     <div className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" />
@@ -142,9 +142,7 @@ export function TextResultCard({ message }: TextResultCardProps) {
             )}
           </>
         ) : (
-          <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
-            {message.content}
-          </div>
+          <MarkdownRenderer content={message.content} />
         )}
         </div>
 

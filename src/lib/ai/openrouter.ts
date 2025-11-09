@@ -185,7 +185,7 @@ export class OpenRouterService {
       const messages = [
         {
           role: 'system',
-          content: `You are an expert programmer. Generate clean, efficient, and well-commented ${params.language || 'code'} code. Always provide the complete code solution without explanations unless asked.`,
+          content: `You are an expert programmer. Generate clean, efficient, and well-commented ${params.language || 'code'} code. Keep responses short and concise. Provide only the necessary code with minimal comments. Avoid lengthy explanations unless specifically asked.`,
         },
         {
           role: 'user',
@@ -235,7 +235,7 @@ export class OpenRouterService {
       const messages = [
         {
           role: 'system',
-          content: `You are an expert programmer. Generate clean, efficient, and well-commented ${params.language || 'code'} code. Always provide the complete code solution without explanations unless asked.`,
+          content: `You are an expert programmer. Generate clean, efficient, and well-commented ${params.language || 'code'} code. Keep responses short and concise. Provide only the necessary code with minimal comments. Avoid lengthy explanations unless specifically asked.`,
         },
         {
           role: 'user',
@@ -282,6 +282,7 @@ export class OpenRouterService {
 
       let buffer = '';
       let accumulatedCode = '';
+      let accumulatedReasoning = '';
 
       yield {
         type: 'start',
@@ -313,20 +314,33 @@ export class OpenRouterService {
               const parsed = JSON.parse(data);
               const delta = parsed.choices?.[0]?.delta;
 
-              // GLM models return content in 'reasoning' field, others use 'content'
-              const contentChunk = delta?.content || delta?.reasoning || '';
-
-              if (contentChunk) {
-                console.log('[OPENROUTER] Code chunk received:', {
-                  hasContent: !!delta?.content,
-                  hasReasoning: !!delta?.reasoning,
-                  length: contentChunk.length
-                });
-                accumulatedCode += contentChunk;
-                yield {
-                  type: 'content',
-                  content: contentChunk,
-                };
+              // Check for reasoning content (thinking tokens)
+              if (delta?.reasoning_content || delta?.reasoning) {
+                const reasoningChunk = delta?.reasoning_content || delta?.reasoning || '';
+                if (reasoningChunk) {
+                  console.log('[OPENROUTER] Reasoning chunk received:', {
+                    length: reasoningChunk.length
+                  });
+                  accumulatedReasoning += reasoningChunk;
+                  yield {
+                    type: 'reasoning',
+                    content: reasoningChunk,
+                  };
+                }
+              }
+              // Regular content
+              else if (delta?.content) {
+                const contentChunk = delta?.content || '';
+                if (contentChunk) {
+                  console.log('[OPENROUTER] Code chunk received:', {
+                    length: contentChunk.length
+                  });
+                  accumulatedCode += contentChunk;
+                  yield {
+                    type: 'content',
+                    content: contentChunk,
+                  };
+                }
               }
             } catch (e) {
               console.warn('Failed to parse code SSE data:', data);

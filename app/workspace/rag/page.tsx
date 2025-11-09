@@ -1,16 +1,232 @@
 "use client";
 
-import { Database, FileText, Upload, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { forwardRef, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, Brain, ExternalLink, FileText, Upload, Database, Search, MessageSquare, Lightbulb, Zap } from "lucide-react";
+import { LlamaIndex, Nova, AdobeFirefly, LongCat, Nvidia, Minimax } from '@lobehub/icons';
+import { Badge } from "@/components/ui/badge";
 import { AuroraText } from "@/components/ui/aurora-text";
+import { cn } from "@/lib/utils";
+import { AnimatedBeam } from "@/components/ui/animated-beam";
+
+const CircularBeam = () => (
+  <svg className="absolute inset-0 -z-10" viewBox="0 0 100 100">
+    <defs>
+      <linearGradient id="beam-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#3b82f6" stopOpacity="0" />
+        <stop offset="20%" stopColor="#3b82f6" stopOpacity="0.8" />
+        <stop offset="30%" stopColor="#8b5cf6" stopOpacity="1" />
+        <stop offset="40%" stopColor="#ec4899" stopOpacity="1" />
+        <stop offset="50%" stopColor="#06b6d4" stopOpacity="1" />
+        <stop offset="60%" stopColor="#10b981" stopOpacity="1" />
+        <stop offset="70%" stopColor="#ec4899" stopOpacity="0.8" />
+        <stop offset="80%" stopColor="#8b5cf6" stopOpacity="0.8" />
+        <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+      </linearGradient>
+    </defs>
+    <circle
+      cx="50"
+      cy="50"
+      r="48"
+      fill="none"
+      stroke="url(#beam-gradient)"
+      strokeWidth="2"
+      strokeDasharray="15 85"
+      strokeDashoffset="0"
+      transform="rotate(-90 50 50)"
+    >
+      <animateTransform
+        attributeName="transform"
+        attributeType="XML"
+        type="rotate"
+        from="-90 50 50"
+        to="270 50 50"
+        dur="3s"
+        repeatCount="indefinite"
+      />
+    </circle>
+  </svg>
+);
+
+const Circle = forwardRef<
+  HTMLDivElement,
+  { className?: string; children?: React.ReactNode; gradient?: string }
+>(({ className, children, gradient }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "relative z-10 flex size-12 items-center justify-center rounded-full bg-black shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
+        className
+      )}
+    >
+      <div className="absolute inset-0 rounded-full border-2 border-white opacity-30"></div>
+      <CircularBeam />
+      {children}
+    </div>
+  );
+});
+
+Circle.displayName = "Circle";
+
+
+export function AnimatedBeamDemo({
+  className,
+}: {
+  className?: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const uploadRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLDivElement>(null);
+  const dbRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
+  const centerRef1 = useRef<HTMLDivElement>(null);
+  const centerRef2 = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const messageRef = useRef<HTMLDivElement>(null);
+  const insightRef = useRef<HTMLDivElement>(null);
+  const minimaxRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <div
+      className={cn(
+        "relative flex h-[300px] w-full items-center justify-center overflow-hidden p-10",
+        className
+      )}
+      ref={containerRef}
+    >
+      <div className="relative flex size-full max-w-3xl items-center justify-between gap-8">
+        {/* Left side - Data Input */}
+        <div className="flex flex-col justify-center gap-5">
+          <Circle ref={imageRef}>
+            <img src="/image-svgrepo-com.svg" alt="Image" className="w-7 h-7" />
+          </Circle>
+          <Circle ref={uploadRef}>
+            <img src="/ms-word-svgrepo-com.svg" alt="Word" className="w-7 h-7" />
+          </Circle>
+          <Circle ref={fileRef}>
+            <img src="/acrobat-reader-svgrepo-com.svg" alt="PDF" className="w-7 h-7" />
+          </Circle>
+          <Circle ref={dbRef}>
+            <img src="/ms-excel-svgrepo-com.svg" alt="Excel" className="w-7 h-7" />
+          </Circle>
+        </div>
+
+        {/* Center - Two Processing Stages */}
+        <div className="flex items-center justify-center gap-3">
+          <Circle ref={centerRef1}>
+            <LlamaIndex.Color size={28} />
+          </Circle>
+          <Circle ref={centerRef2}>
+            <Nova.Color size={28} />
+          </Circle>
+        </div>
+
+        {/* Right side - Output */}
+        <div className="flex flex-col justify-center gap-6">
+          <Circle ref={searchRef}>
+            <Nvidia.Color size={28} />
+          </Circle>
+          <Circle ref={messageRef}>
+            <AdobeFirefly.Color size={28} />
+          </Circle>
+          <Circle ref={insightRef}>
+            <LongCat.Color size={28} />
+          </Circle>
+          <Circle ref={minimaxRef}>
+            <Minimax.Color size={28} />
+          </Circle>
+        </div>
+      </div>
+
+      {/* Animated beams for linear pipeline flow */}
+      {/* Left side - Input beams flowing inward */}
+      <AnimatedBeam
+        containerRef={containerRef}
+        fromRef={imageRef}
+        toRef={centerRef1}
+        curvature={0.4}
+        duration={5}
+      />
+      <AnimatedBeam
+        containerRef={containerRef}
+        fromRef={uploadRef}
+        toRef={centerRef1}
+        curvature={0.2}
+        delay={0.2}
+        duration={5}
+      />
+      <AnimatedBeam
+        containerRef={containerRef}
+        fromRef={fileRef}
+        toRef={centerRef1}
+        curvature={0}
+        delay={0.4}
+        duration={5}
+      />
+      <AnimatedBeam
+        containerRef={containerRef}
+        fromRef={dbRef}
+        toRef={centerRef1}
+        curvature={-0.2}
+        delay={0.6}
+        duration={5}
+      />
+
+      {/* Center connection - Process 1 to Process 2 */}
+      <AnimatedBeam
+        containerRef={containerRef}
+        fromRef={centerRef1}
+        toRef={centerRef2}
+        curvature={0}
+        delay={0.9}
+        duration={5}
+      />
+
+      {/* Right side - Output beams flowing inward from Process 2 */}
+      <AnimatedBeam
+        containerRef={containerRef}
+        fromRef={centerRef2}
+        toRef={searchRef}
+        curvature={-0.3}
+        delay={1.2}
+        duration={5}
+      />
+      <AnimatedBeam
+        containerRef={containerRef}
+        fromRef={centerRef2}
+        toRef={messageRef}
+        curvature={-0.15}
+        delay={1.5}
+        duration={5}
+      />
+      <AnimatedBeam
+        containerRef={containerRef}
+        fromRef={centerRef2}
+        toRef={insightRef}
+        curvature={0}
+        delay={1.8}
+        duration={5}
+      />
+      <AnimatedBeam
+        containerRef={containerRef}
+        fromRef={centerRef2}
+        toRef={minimaxRef}
+        curvature={0.15}
+        delay={2.1}
+        duration={5}
+      />
+    </div>
+  );
+}
 
 export default function RAGPage() {
   return (
-    <div className="flex-1 flex items-center justify-center p-4 md:p-8">
-      <div className="w-full max-w-4xl mx-auto">
-        <div className="text-center mb-12 px-2">
-
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 px-2">
+    <div className="flex-1 p-4 md:p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-4 px-2 pt-16">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
             Vector Search &<br />
             <AuroraText
               colors={["#3b82f6", "#8b5cf6", "#ec4899", "#06b6d4", "#10b981"]}
@@ -21,81 +237,48 @@ export default function RAGPage() {
             <br />
             on Your Data
           </h1>
-
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto text-center">
-            <span className="text-blue-400"> Coming soon!</span>
-          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <FeatureCard
-            icon={<Upload className="h-6 w-6" />}
-            title="Data Ingestion"
-            description="Convert documents into vector embeddings for semantic search"
-            disabled
-          />
-          <FeatureCard
-            icon={<Search className="h-6 w-6" />}
-            title="Semantic Retrieval"
-            description="Query your knowledge base with context-aware AI responses"
-            disabled
-          />
-          <FeatureCard
-            icon={<FileText className="h-6 w-6" />}
-            title="Source Attribution"
-            description="Retrieve responses with precise source document references"
-            disabled
-          />
+        {/* Animated Beam Demo */}
+        <div className="mb-12 -mt-8">
+          <AnimatedBeamDemo />
         </div>
 
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20">
-            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-            <span className="text-sm text-gray-400">Under Development</span>
+        {/* Process Labels */}
+        <div className="flex justify-center gap-8 mb-8 text-sm">
+          <div className="text-center">
+            <div className="font-semibold text-blue-600">Input</div>
+            <div className="text-muted-foreground">Upload & Parse</div>
           </div>
-          <p className="text-sm text-gray-500 mt-4">
-            This feature will allow you to create embeddings from your documents using Ollama Cloud
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface FeatureCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  disabled?: boolean;
-}
-
-function FeatureCard({ icon, title, description, disabled = false }: FeatureCardProps) {
-  return (
-    <div className={`relative group ${
-      disabled ? 'opacity-50' : ''
-    }`}>
-      <div className="relative h-full p-6 rounded-2xl border border-gray-600/30 bg-gradient-to-b from-gray-900/50 to-black/50 transition-all duration-300 hover:border-blue-500/30">
-        <div className="flex flex-col items-center text-center space-y-4">
-          <div className={`p-3 rounded-xl border ${
-            disabled
-              ? 'border-gray-600 bg-gray-800/50'
-              : 'border-blue-500/30 bg-blue-500/10'
-          } transition-all duration-300`}>
-            <div className={disabled ? 'text-gray-500' : 'text-blue-400'}>
-              {icon}
-            </div>
+          <div className="text-center">
+            <div className="font-semibold text-purple-600">Process</div>
+            <div className="text-muted-foreground">Embed & Index</div>
           </div>
-
-          <h3 className={`text-lg font-semibold ${
-            disabled ? 'text-gray-500' : 'text-white'
-          }`}>
-            {title}
-          </h3>
-
-          <p className="text-sm text-gray-400 leading-relaxed">
-            {description}
-          </p>
+          <div className="text-center">
+            <div className="font-semibold text-green-600">Output</div>
+            <div className="text-muted-foreground">Search & Generate</div>
+          </div>
         </div>
+
+        {/* Description */}
+        <div className="text-center mb-8 px-2">
+          <p className="text-lg text-muted-foreground mb-4">
+            Query your documents with AI-powered semantic search using free Hugging Face embeddings
+          </p>
+          <div className="flex items-center justify-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Free Tier: 30,000 requests/month
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              <Brain className="w-3 h-3 mr-1" />
+              Hugging Face API
+            </Badge>
+          </div>
+        </div>
+
+        {/* Content will be added here as separate subpages */}
+
       </div>
     </div>
   );

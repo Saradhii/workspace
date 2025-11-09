@@ -1,8 +1,9 @@
 import { BaseAIProvider, ModelInfo } from './base-provider';
 import { OllamaProvider } from './ollama-provider';
+import { HuggingFaceProvider } from './huggingface-provider';
 
 // Provider registry
-export type ProviderType = 'ollama' | 'openrouter' | 'chutes';
+export type ProviderType = 'ollama' | 'openrouter' | 'chutes' | 'huggingface';
 
 export interface ProviderConfig {
   type: ProviderType;
@@ -21,6 +22,7 @@ class ProviderRegistry {
   constructor() {
     // Register built-in providers
     this.register('ollama', () => new OllamaProvider());
+    this.register('huggingface', () => new HuggingFaceProvider());
     // Add other providers as needed
     // this.register('openrouter', () => new OpenRouterProvider());
     // this.register('chutes', () => new ChutesProvider());
@@ -204,6 +206,9 @@ export const providerManager = new ProviderManager();
 export type { ModelInfo, BaseChatRequest, BaseChatResponse, BaseStreamEvent, BaseEmbeddingRequest, BaseEmbeddingResponse } from './base-provider';
 export { BaseAIProvider } from './base-provider';
 export { OllamaProvider } from './ollama-provider';
+export { HuggingFaceProvider } from './huggingface-provider';
+export type { HuggingFaceConfig } from './huggingface-provider';
+export type { OCRGenerationRequest, OCRGenerationResponse } from '@/types/api';
 
 // Convenience functions
 export async function getProvider(type?: ProviderType): Promise<BaseAIProvider> {

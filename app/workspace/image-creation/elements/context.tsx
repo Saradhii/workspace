@@ -10,7 +10,8 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 export type ContextProps = ComponentProps<"div"> & {
-  usage?: unknown;
+  max?: number;
+  used?: number;
 };
 
 const ICON_VIEWBOX = 24;
@@ -62,10 +63,10 @@ export const ContextIcon = ({ percent }: ContextIconProps) => {
   );
 };
 
-export const Context = ({ className, ...props }: ContextProps) => {
-  const used = 0;
-  const max = 128000;
-  const usedPercent = 0;
+export const Context = ({ className, max, used, ...props }: ContextProps) => {
+  const tokensUsed = used || 0;
+  const maxTokens = max || 128000;
+  const usedPercent = maxTokens > 0 ? (tokensUsed / maxTokens) * 100 : 0;
 
   return (
     <DropdownMenu>
@@ -89,7 +90,7 @@ export const Context = ({ className, ...props }: ContextProps) => {
           <div className="flex items-start justify-between text-sm">
             <span>{usedPercent.toFixed(1)}%</span>
             <span className="text-muted-foreground">
-              {used} / {max} tokens
+              {tokensUsed} / {maxTokens} tokens
             </span>
           </div>
           <div className="space-y-2">

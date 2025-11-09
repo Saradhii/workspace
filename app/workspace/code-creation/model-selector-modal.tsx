@@ -9,9 +9,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import {
+  Checkbox,
+  type CheckboxProps,
+} from "@/components/animate-ui/components/headless/checkbox";
 import { CpuIcon, ChevronDownIcon } from "../image-creation/icons";
+import { QwenLogo, DeepSeekLogo, ZhipuLogo } from "@/components/ai-logos";
 import type { CodeModel } from '@/types/models';
 
 // Re-export for convenience
@@ -76,35 +80,29 @@ export function CodeModelSelectorModal({
 
         <div className="space-y-4">
           {/* Model Selection */}
-          <RadioGroup value={tempSelectedModel} onValueChange={setTempSelectedModel}>
+          <div className="space-y-3">
             {models.map((model) => (
-              <div key={model.id} className="space-y-2">
-                <div className="flex items-start space-x-3">
-                  <RadioGroupItem value={model.id} id={model.id} />
-                  <div className="flex-1 space-y-1">
-                    <Label
-                      htmlFor={model.id}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                    >
-                      {model.display_name}
-                      {model.specialty === "code_generation" && (
-                        <span className="ml-2 rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                          Best for Code
-                        </span>
-                      )}
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {model.description}
-                    </p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span>Provider: {model.provider}</span>
-                      <span>Context: {model.context_length.toLocaleString()}</span>
-                    </div>
+              <Label key={model.id} className="flex items-center gap-x-3 cursor-pointer">
+                <Checkbox
+                  variant="accent"
+                  size="sm"
+                  checked={tempSelectedModel === model.id}
+                  onChange={() => setTempSelectedModel(model.id)}
+                />
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    {model.icon && <model.icon className="w-4 h-4" />}
+                    <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      {model.display_name || model.displayName}
+                    </span>
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    {model.description}
+                  </p>
                 </div>
-              </div>
+              </Label>
             ))}
-          </RadioGroup>
+          </div>
 
           {/* Action Buttons */}
           <div className="flex justify-end pt-4 border-t">

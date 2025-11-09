@@ -10,11 +10,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Checkbox,
+  type CheckboxProps,
+} from "@/components/animate-ui/components/headless/checkbox";
 import { CpuIcon, ChevronDownIcon } from "./icons";
+import { ChromaLogo, NetaLuminaLogo } from "@/components/ai-logos";
 
 // Import ImageModel from shared types
 import type { ImageModel } from "@/types/models";
+import type { LucideIcon } from "lucide-react";
 
 export const imageModels: ImageModel[] = [
   {
@@ -24,6 +30,7 @@ export const imageModels: ImageModel[] = [
     description: "Fast and efficient image generation",
     provider: "Internal",
     color: "text-pink-500",
+    icon: ChromaLogo,
   },
   {
     id: "neta-lumina",
@@ -32,6 +39,7 @@ export const imageModels: ImageModel[] = [
     description: "High-quality detailed image generation",
     provider: "Internal",
     color: "text-emerald-500",
+    icon: NetaLuminaLogo,
   },
 ];
 
@@ -159,27 +167,27 @@ export function ModelSelectorModal({
           {/* Model Selection */}
           <div className="space-y-3">
             {models.map((model) => (
-              <div key={model.id} className="flex items-start space-x-3">
+              <Label key={model.id} className="flex items-center gap-x-3 cursor-pointer">
                 <Checkbox
-                  id={model.id}
+                  variant="accent"
+                  size="sm"
                   checked={tempSelectedModels.includes(model.id)}
-                  onCheckedChange={(checked) =>
+                  onChange={(checked) =>
                     handleModelToggle(model.id, checked as boolean)
                   }
                 />
                 <div className="flex-1 space-y-1">
-                  <label
-                    htmlFor={model.id}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center gap-2"
-                  >
-                    <span className={model.color}>{model.displayName}</span>
-                    <span className="text-xs text-muted-foreground">({model.name})</span>
-                  </label>
+                  <div className="flex items-center gap-2">
+                    {model.icon && <model.icon className="w-4 h-4" />}
+                    <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      {model.displayName}
+                    </span>
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     {model.description}
                   </p>
                 </div>
-              </div>
+              </Label>
             ))}
           </div>
 

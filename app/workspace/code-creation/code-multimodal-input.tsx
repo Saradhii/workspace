@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowUpIcon,
   StopIcon,
+  CpuIcon,
+  ChevronDownIcon,
 } from "../image-creation/icons";
 import {
   PromptInput,
@@ -16,7 +18,7 @@ import {
   PromptInputSubmit,
 } from "../image-creation/elements/prompt-input";
 import { Context } from "../image-creation/elements/context";
-import { ModelSelectorModal } from "../image-creation/model-selector-modal";
+import { CodeModelSelectorModal } from "./model-selector-modal";
 import type { CodeModel } from "@/lib/api";
 
 interface CodeMultimodalInputProps {
@@ -100,18 +102,24 @@ function PureCodeMultimodalInput({
         </div>
         <PromptInputToolbar className="!border-top-0 border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
           <PromptInputTools className="gap-0 sm:gap-0.5">
-            <ModelSelectorModal
-              selectedModels={[selectedModel ?? ""]}
-              onSelectionChange={(models) => onModelChange?.(models[0] ?? "")}
-              models={models.map(m => ({
-                id: m.id,
-                name: m.name,
-                displayName: m.displayName,
-                description: m.description,
-                provider: m.provider,
-                color: 'text-gray-600'
-              }))}
+            <CodeModelSelectorModal
+              selectedModel={selectedModel ?? ""}
+              onSelectionChange={(model) => onModelChange?.(model)}
+              models={models}
               title="Select Code Generation Model"
+              trigger={
+                <Button
+                  variant="ghost"
+                  className="flex h-8 items-center gap-2 rounded-lg border-0 bg-background px-2 text-foreground shadow-none transition-colors hover:bg-accent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  type="button"
+                >
+                  <CpuIcon size={16} />
+                  <span className="hidden font-medium text-xs sm:block">
+                    {models.find(m => m.id === selectedModel)?.display_name || "Select model"}
+                  </span>
+                  <ChevronDownIcon size={16} />
+                </Button>
+              }
             />
           </PromptInputTools>
 

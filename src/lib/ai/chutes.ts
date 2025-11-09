@@ -465,16 +465,33 @@ export class ChutesService {
   }
 
   async* streamText(params: TextGenerationRequest): AsyncGenerator<TextStreamEvent> {
+    console.log('[CHUTES] Starting stream with model:', params.model);
+
+    // Check if this is a reasoning model
+    const isReasoningModel = params.model?.includes('gpt-oss-20b') ||
+                            params.model?.includes('Tongyi-DeepResearch') ||
+                            params.model?.includes('reasoning');
+
+    const requestBody: any = {
+      model: params.model,
+      messages: params.messages,
+      temperature: params.temperature || 0.7,
+      max_tokens: params.max_tokens || 1024,
+      stream: true,
+    };
+
+    // Add thinking parameter for reasoning models
+    if (isReasoningModel) {
+      requestBody.think = true;
+      console.log('[CHUTES] Enabling think mode for reasoning model:', params.model);
+    }
+
+    console.log('[CHUTES] Request body:', JSON.stringify(requestBody, null, 2));
+
     const response = await fetch(`${this.textApiUrl}/chat/completions`, {
       method: 'POST',
       headers: this.getHeaders(),
-      body: JSON.stringify({
-        model: params.model,
-        messages: params.messages,
-        temperature: params.temperature || 0.7,
-        max_tokens: params.max_tokens || 1024,
-        stream: true,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -534,6 +551,18 @@ export class ChutesService {
               const parsed = JSON.parse(data);
               const delta = parsed.choices?.[0]?.delta;
 
+              // Debug logging to see the actual structure
+              if (delta) {
+                console.log('[CHUTES] Delta received:', {
+                  hasContent: !!delta.content,
+                  hasReasoning: !!delta.reasoning,
+                  hasThinking: !!delta.thinking,
+                  hasReasoningContent: !!delta.reasoning_content,
+                  content: delta.content?.substring(0, 100),
+                  fullDelta: delta
+                });
+              }
+
               if (delta?.content) {
                 const content = delta.content;
 
@@ -546,6 +575,7 @@ export class ChutesService {
                     accumulatedContent += parts[0];
                   }
                   thinkingBuffer = parts[1] || '';
+                  console.log('[CHUTES] Found <thinking> tag');
                 } else if (content.includes('</thinking>')) {
                   isInThinking = false;
                   const parts = content.split('</thinking>');
@@ -557,6 +587,7 @@ export class ChutesService {
                   if (parts[1]) {
                     accumulatedContent += parts[1];
                   }
+                  console.log('[CHUTES] Found </thinking> tag, accumulated reasoning:', accumulatedReasoning.length);
                 } else if (isInThinking) {
                   thinkingBuffer += content;
                   // Yield reasoning event
@@ -574,6 +605,39 @@ export class ChutesService {
                     accumulated: accumulatedContent,
                   };
                 }
+              }
+
+              // Check for separate reasoning field
+              if (delta?.reasoning) {
+                console.log('[CHUTES] Found reasoning in delta.reasoning');
+                accumulatedReasoning += delta.reasoning;
+                yield {
+                  type: 'reasoning',
+                  content: delta.reasoning,
+                  accumulated: accumulatedReasoning,
+                };
+              }
+
+              // Check for separate thinking field
+              if (delta?.thinking) {
+                console.log('[CHUTES] Found thinking in delta.thinking');
+                accumulatedReasoning += delta.thinking;
+                yield {
+                  type: 'reasoning',
+                  content: delta.thinking,
+                  accumulated: accumulatedReasoning,
+                };
+              }
+
+              // Check for reasoning_content field (used by Tongyi-DeepResearch)
+              if (delta?.reasoning_content) {
+                console.log('[CHUTES] Found reasoning in delta.reasoning_content');
+                accumulatedReasoning += delta.reasoning_content;
+                yield {
+                  type: 'reasoning',
+                  content: delta.reasoning_content,
+                  accumulated: accumulatedReasoning,
+                };
               }
 
               // Yield usage info if available

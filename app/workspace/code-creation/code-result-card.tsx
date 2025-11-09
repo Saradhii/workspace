@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, Trash2, Code as CodeIcon, Palette } from "lucide-react";
+import { Copy, Download, Trash2, Code as CodeIcon, Palette, Brain, ChevronDown, ChevronUp } from "lucide-react";
 import { Code, CodeBlock, CodeHeader } from '@/components/animate-ui/components/animate/code';
 import {
   Select,
@@ -121,6 +121,7 @@ interface CodeResultCardProps {
     timestamp: Date;
     language?: string;
     isTyping?: boolean;
+    reasoning?: string;
   };
   onCopy?: (code: string) => void;
   onDownload?: (code: string) => void;
@@ -132,6 +133,15 @@ interface CodeResultCardProps {
 export function CodeResultCard({ message, onCopy, onDownload, onDelete }: CodeResultCardProps) {
   const isUser = message.role === "user";
   const segments = parseContent(message.content);
+  const [showReasoning, setShowReasoning] = useState(false);
+  const hasReasoning = message.reasoning && message.reasoning.trim() && !isUser;
+
+  // Auto-show reasoning when streaming starts for reasoning models
+  useEffect(() => {
+    if (hasReasoning && message.isTyping) {
+      setShowReasoning(true);
+    }
+  }, [hasReasoning, message.isTyping]);
 
   // Theme state with localStorage persistence
   const [codeTheme, setCodeTheme] = useState<string>('auto');
@@ -287,6 +297,40 @@ export function CodeResultCard({ message, onCopy, onDownload, onDelete }: CodeRe
             </div>
           )}
         </div>
+
+        {/* Reasoning Section - Show during streaming for reasoning models and after completion */}
+        {hasReasoning && (
+          <div className="mb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowReasoning(!showReasoning)}
+              className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground h-auto px-2 py-1"
+            >
+              <Brain className="h-3 w-3" />
+              <span>Thought process {message.isTyping && message.reasoning ? "(Streaming...)" : ""}</span>
+              {showReasoning ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            </Button>
+            {showReasoning && message.reasoning && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-2 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 p-3"
+              >
+                <div className="text-xs text-muted-foreground mb-1 font-mono">
+                  Thinking{message.isTyping ? " (Live)" : ":"}
+                </div>
+                <div className="whitespace-pre-wrap text-xs italic font-mono text-muted-foreground leading-relaxed">
+                  {message.reasoning}
+                  {message.isTyping && (
+                    <span className="inline-block w-2 h-3 ml-1 bg-current animate-pulse" />
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </div>
+        )}
 
         {/* Content segments */}
         {isUser ? (

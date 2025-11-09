@@ -34,12 +34,16 @@ function PureTextMultimodalInput({
   onModelChange,
   onSuggestionClick,
   models,
+  tokenUsage,
 }: TextMultimodalInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const contextProps = useMemo(
-    () => ({}),
-    []
+    () => ({
+      max: models.find(m => m.id === selectedModelId)?.context_length || 4096,
+      used: tokenUsage?.total_tokens || 0,
+    }),
+    [selectedModelId, models, tokenUsage]
   );
 
   const adjustHeight = useCallback(() => {

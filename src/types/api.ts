@@ -359,7 +359,7 @@ export interface CodeGenerationResponse {
 }
 
 export interface CodeStreamEvent {
-  type: 'start' | 'content' | 'done' | 'error';
+  type: 'start' | 'content' | 'reasoning' | 'done' | 'error';
   content?: string;
   request_id?: string;
   error?: string;
@@ -385,6 +385,67 @@ export interface HealthResponse {
     ai_services: Record<string, 'healthy' | 'unhealthy' | 'disabled'>;
     storage: 'healthy' | 'unhealthy';
   };
+}
+
+// ===================================
+// OCR (Optical Character Recognition) Types
+// ===================================
+
+export interface OCRGenerationRequest {
+  image: string; // base64 encoded image
+  model?: string;
+  prompt?: string; // OCR prompt/instruction
+  user_id?: string;
+  options?: {
+    language?: string;
+    output_format?: 'text' | 'markdown' | 'json';
+    preserve_layout?: boolean;
+  };
+}
+
+export interface OCRGenerationResponse {
+  success: boolean;
+  text?: string;
+  markdown?: string;
+  confidence?: number;
+  model_used?: string;
+  processing_time_ms?: number;
+  request_id?: string;
+  error?: string;
+  error_type?: string;
+  truncated?: boolean;
+  warning?: string;
+}
+
+export interface OCRStreamEvent {
+  type: 'progress' | 'content' | 'complete' | 'error';
+  timestamp: string;
+  progress?: number;
+  stage?: string;
+  message?: string;
+  content?: string;
+  confidence?: number;
+  error?: string;
+  details?: Record<string, unknown>;
+}
+
+export interface OCRModel {
+  id: string;
+  name: string;
+  display_name: string;
+  description: string;
+  supported_formats: string[];
+  max_image_size: number; // in pixels
+  features: string[];
+  output_formats: string[];
+  languages?: string[];
+}
+
+export interface OCRModelsResponse {
+  success: boolean;
+  models: OCRModel[];
+  count: number;
+  provider?: string;
 }
 
 // ===================================

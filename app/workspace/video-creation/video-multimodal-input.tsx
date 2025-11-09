@@ -22,6 +22,7 @@ import { Context } from "../image-creation/elements/context";
 import { VideoSettingsPopover } from "./video-settings-popover";
 import { SuggestedActions } from "./suggested-actions";
 import { ModelSelectorModal } from "../image-creation/model-selector-modal";
+import { WanLogo } from "@/components/ai-logos";
 import type { ImageModel } from "@/types/models";
 import type { ChatMessage } from "@/lib/types";
 import type { VideoParams } from "@/types/components";
@@ -35,6 +36,7 @@ const videoModels: ImageModel[] = [
     description: "Fast image-to-video generation",
     provider: "Internal",
     color: "text-blue-500",
+    icon: WanLogo,
   },
 ];
 

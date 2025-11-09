@@ -128,6 +128,11 @@ export interface TextMultimodalInputProps extends Omit<MultimodalInputProps, 'me
   setMessages: Dispatch<SetStateAction<TextMessage[]>>;
   actualMessagesCount?: number;
   models: TextModel[];
+  tokenUsage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  } | null;
 }
 
 export interface ImageMultimodalInputProps extends MultimodalInputProps {

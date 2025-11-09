@@ -6,9 +6,10 @@ import { CodeMultimodalInput } from "./code-multimodal-input";
 import { CodeLoadingCard } from "./code-loading-card";
 import { CodeResultCard } from "./code-result-card";
 import { TracingBeam } from "@/components/ui/tracing-beam";
-import { getUserSession, getCodeModels, generateCodeStream, type CodeModel } from "@/lib/api";
+import { getUserSession, generateCodeStream, type CodeModel } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Code, Download, Database, Zap, Lightbulb, Shield, TrendingUp, Sparkles } from "lucide-react";
+import { QwenLogo, DeepSeekLogo, ZhipuLogo, MistralLogo, GrokLogo, ArceeLogo, InceptionLogo, AgenticaLogo, MinimaxLogo, KimiLogo } from "@/components/ai-logos";
 
 interface CodeMessage {
   id: string;
@@ -32,7 +33,7 @@ export default function CodeCreation() {
   const chatId = "code-creation-chat";
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Get user session and models on mount
+  // Get user session on mount
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -43,45 +44,59 @@ export default function CodeCreation() {
         console.error("Failed to load user session:", error);
       }
 
-      try {
-        // Load available models
-        const modelsResponse = await getCodeModels();
-        if (modelsResponse.success && modelsResponse.models) {
-          // Filter to free coding-focused models
-          const filteredModels = modelsResponse.models.filter(model =>
-            model.id.endsWith(":free") && (
-              model.id.includes("glm") ||
-              model.id.includes("qwen") && model.id.includes("coder") ||
-              model.id.includes("deepseek") ||
-              model.id.includes("minimax")
-            )
-          ).slice(0, 2);
-          setAvailableModels(filteredModels);
-        }
-      } catch (error) {
-        console.error("Failed to load models:", error);
-        // Set default free models if API fails
-        setAvailableModels([
-          {
-            id: "z-ai/glm-4.5-air:free",
-            name: "glm-4.5-air-free",
-            displayName: "GLM 4.5 Air (Free)",
-            description: "Advanced free coding assistant",
-            provider: "Zhipu AI",
-            context_length: 128000,
-            display_name: "GLM 4.5 Air (Free)",
-          },
-          {
-            id: "qwen/qwen3-coder:free",
-            name: "qwen3-coder-free",
-            displayName: "Qwen3 Coder (Free)",
-            description: "Free powerful code generation model",
-            provider: "Qwen",
-            context_length: 128000,
-            display_name: "Qwen3 Coder (Free)",
-          }
-        ]);
-      }
+      // Set hardcoded models
+      const hardcodedModels: CodeModel[] = [
+        {
+          id: "z-ai/glm-4.5-air:free",
+          name: "Z.AI: GLM 4.5 Air (free)",
+          displayName: "Z.AI: GLM 4.5 Air (free)",
+          display_name: "Z.AI: GLM 4.5 Air (free)",
+          description: "GLM-4.5-Air is the lightweight variant of our latest flagship model family, purpose-built for agent-centric applications.",
+          provider: "z-ai",
+          context_length: 131072,
+          specialty: "code",
+          supports_reasoning: false,
+          icon: ZhipuLogo,
+        },
+        {
+          id: "qwen/qwen3-coder:free",
+          name: "Qwen: Qwen3 Coder 480B A35B (free)",
+          displayName: "Qwen: Qwen3 Coder 480B A35B (free)",
+          display_name: "Qwen: Qwen3 Coder 480B A35B (free)",
+          description: "Qwen3-Coder-480B-A35B-Instruct is a Mixture-of-Experts (MoE) code generation model optimized for agentic coding tasks.",
+          provider: "qwen",
+          context_length: 262000,
+          specialty: "code",
+          supports_reasoning: false,
+          icon: QwenLogo,
+        },
+        {
+          id: "minimax/minimax-m2:free",
+          name: "MiniMax: MiniMax M2 (free)",
+          displayName: "MiniMax: MiniMax M2 (free)",
+          display_name: "MiniMax: MiniMax M2 (free)",
+          description: "MiniMax M2 is a powerful language model designed for various natural language processing tasks.",
+          provider: "minimax",
+          context_length: 128000,
+          specialty: "code",
+          supports_reasoning: false,
+          icon: MinimaxLogo,
+        },
+        {
+          id: "moonshotai/kimi-k2:free",
+          name: "Moonshot AI: Kimi K2 (free)",
+          displayName: "Moonshot AI: Kimi K2 (free)",
+          display_name: "Moonshot AI: Kimi K2 (free)",
+          description: "Kimi K2 is a large language model with strong capabilities in code generation and reasoning.",
+          provider: "moonshotai",
+          context_length: 128000,
+          specialty: "code",
+          supports_reasoning: false,
+          icon: KimiLogo,
+        },
+      ];
+
+      setAvailableModels(hardcodedModels);
     };
 
     loadData();
@@ -133,9 +148,19 @@ export default function CodeCreation() {
       });
 
       let accumulatedContent = '';
+      let accumulatedReasoning = '';
 
       for await (const event of stream) {
-        if (event.type === 'content') {
+        if (event.type === 'reasoning') {
+          accumulatedReasoning += event.content;
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === assistantMessage.id
+                ? { ...msg, reasoning: accumulatedReasoning, isTyping: true }
+                : msg
+            )
+          );
+        } else if (event.type === 'content') {
           accumulatedContent += event.content;
           setMessages(prev =>
             prev.map(msg =>
@@ -234,39 +259,39 @@ export default function CodeCreation() {
   const codeSuggestions = [
     {
       icon: <Code className="h-4 w-4" />,
-      title: "React Component",
-      description: "Create a React component with hooks",
-      action: "Create a React component with useState, useEffect, and custom hooks for state management",
+      title: "React Hook",
+      description: "Create a custom React hook",
+      action: "Create a custom hook for managing API calls",
     },
     {
       icon: <Database className="h-4 w-4" />,
-      title: "REST API",
-      description: "Build an Express.js server",
-      action: "Build an Express.js server with CRUD operations for a database",
+      title: "API Endpoint",
+      description: "Build a REST API endpoint",
+      action: "Create a GET endpoint with error handling",
     },
     {
       icon: <Zap className="h-4 w-4" />,
-      title: "Sorting Algorithms",
-      description: "Quick sort, bubble sort, merge sort",
-      action: "Implement quick sort, bubble sort, merge sort, and binary search algorithms",
+      title: "Data Parser",
+      description: "Parse JSON with validation",
+      action: "Parse and validate JSON data safely",
     },
     {
       icon: <Shield className="h-4 w-4" />,
-      title: "Authentication",
-      description: "JWT auth with protected routes",
-      action: "Create JWT authentication with login, registration, and protected routes",
+      title: "Async Handler",
+      description: "Error handling for async",
+      action: "Handle async errors with try-catch",
     },
     {
       icon: <Lightbulb className="h-4 w-4" />,
-      title: "Dashboard",
-      description: "Responsive admin dashboard",
-      action: "Build a responsive admin dashboard with charts and data visualization",
+      title: "Utility Function",
+      description: "Format dates utility",
+      action: "Create a date formatting utility",
     },
     {
       icon: <TrendingUp className="h-4 w-4" />,
-      title: "Performance",
-      description: "Implement lazy loading",
-      action: "Add React.lazy, Suspense, and error boundaries for better performance",
+      title: "Component",
+      description: "Reusable button component",
+      action: "Build a reusable button with variants",
     },
   ];
 
@@ -413,9 +438,19 @@ export default function CodeCreation() {
                               });
 
                               let accumulatedContent = '';
+                              let accumulatedReasoning = '';
 
                               for await (const event of stream) {
-                                if (event.type === 'content') {
+                                if (event.type === 'reasoning') {
+                                  accumulatedReasoning += event.content;
+                                  setMessages(prev =>
+                                    prev.map(msg =>
+                                      msg.id === assistantMessage.id
+                                        ? { ...msg, reasoning: accumulatedReasoning, isTyping: true }
+                                        : msg
+                                    )
+                                  );
+                                } else if (event.type === 'content') {
                                   accumulatedContent += event.content;
                                   setMessages(prev =>
                                     prev.map(msg =>
