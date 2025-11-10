@@ -2,12 +2,14 @@
 
 import React, { forwardRef, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Brain, ExternalLink, FileText, Upload, Database, Search, MessageSquare, Lightbulb, Zap } from "lucide-react";
+import { Sparkles, Brain, ExternalLink, FileText, Upload, Database, Search, MessageSquare, Lightbulb, Zap, ArrowRight, Cpu } from "lucide-react";
 import { LlamaIndex, Nova, AdobeFirefly, LongCat, Nvidia, Minimax } from '@lobehub/icons';
 import { Badge } from "@/components/ui/badge";
 import { AuroraText } from "@/components/ui/aurora-text";
+import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
 import { cn } from "@/lib/utils";
 import { AnimatedBeam } from "@/components/ui/animated-beam";
+import Link from "next/link";
 
 const CircularBeam = () => (
   <svg className="absolute inset-0 -z-10" viewBox="0 0 100 100">
@@ -240,12 +242,27 @@ export default function RAGPage() {
         </div>
 
         {/* Animated Beam Demo */}
-        <div className="mb-12 -mt-8">
+        <div className="mb-4 -mt-8">
           <AnimatedBeamDemo />
         </div>
 
+        {/* Try RAG Studio Button */}
+        <div className="flex justify-center mb-6">
+          <Link href="/workspace/rag/studio">
+            <HoverBorderGradient
+              containerClassName="rounded-full"
+              as="button"
+              className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2 px-6 py-2 text-base font-semibold"
+            >
+              <Cpu className="h-4 w-4" />
+              <span>Try RAG Studio</span>
+              <ArrowRight className="h-4 w-4" />
+            </HoverBorderGradient>
+          </Link>
+        </div>
+
         {/* Process Labels */}
-        <div className="flex justify-center gap-8 mb-8 text-sm">
+        <div className="flex justify-center gap-8 mb-6 text-sm">
           <div className="text-center">
             <div className="font-semibold">
               <AuroraText
@@ -282,7 +299,7 @@ export default function RAGPage() {
         </div>
 
         {/* Description */}
-        <div className="text-center mb-8 px-2">
+        <div className="text-center mb-6 px-2">
           <p className="text-lg text-muted-foreground mb-4">
             Transform your documents into intelligent, searchable knowledge with AI-powered semantic understanding
           </p>

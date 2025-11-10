@@ -136,29 +136,6 @@ export default function HFEmbeddingTestPage() {
         </p>
       </div>
 
-      {/* API Key Setup Notice */}
-      <Card className="mb-6 border-yellow-200 bg-yellow-50 dark:border-yellow-800/30 dark:bg-yellow-950/20">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Key className="h-5 w-5 text-yellow-600" />
-            API Key Required
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
-            To use Hugging Face embeddings, you need an API key:
-          </p>
-          <ol className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1 ml-4">
-            <li>1. Go to <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="underline flex items-center gap-1 inline-flex">
-              huggingface.co/settings/tokens <ExternalLink className="h-3 w-3" />
-            </a></li>
-            <li>2. Create a new token (read permissions are sufficient)</li>
-            <li>3. Add it to your .env file: <code className="bg-yellow-100 px-1 py-0.5 rounded">HUGGINGFACE_API_KEY=hf_your_token_here</code></li>
-            <li>4. Restart the development server</li>
-          </ol>
-        </CardContent>
-      </Card>
-
       <Tabs defaultValue="test" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="test">Model Test</TabsTrigger>
