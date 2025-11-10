@@ -18,7 +18,7 @@ export class HuggingFaceProvider extends BaseAIProvider {
   constructor() {
     super();
     this.apiKey = process.env.HUGGINGFACE_API_KEY || '';
-    this.baseUrl = process.env.HUGGINGFACE_BASE_URL || 'https://router.huggingface.co/hf-inference';
+    this.baseUrl = process.env.HUGGINGFACE_BASE_URL || 'https://router.huggingface.co/v1';
   }
 
   async initialize(config: HuggingFaceConfig): Promise<void> {
@@ -271,14 +271,19 @@ export class HuggingFaceProvider extends BaseAIProvider {
   }
 
   /**
-   * Perform OCR on an image using vision models
+   * Perform OCR on an image using vision models via chat completion
    */
   async performOCR(request: OCRGenerationRequest): Promise<OCRGenerationResponse> {
     if (!this.initialized) {
       await this.initialize({});
     }
 
-    const model = request.model || 'deepseek-ai/DeepSeek-OCR';
+    // Add :novita provider suffix for DeepSeek-OCR
+    let model = request.model || 'deepseek-ai/DeepSeek-OCR';
+    if (model === 'deepseek-ai/DeepSeek-OCR' && !model.includes(':')) {
+      model = 'deepseek-ai/DeepSeek-OCR:novita';
+    }
+
     const startTime = Date.now();
 
     // Default prompts based on model
@@ -289,97 +294,93 @@ export class HuggingFaceProvider extends BaseAIProvider {
 
     try {
       // Use the full data URI format
-      const imageData = request.image.includes('data:')
+      const imageUrl = request.image.includes('data:')
         ? request.image
         : `data:image/jpeg;base64,${request.image}`;
 
-        // Use the new router endpoint
-      const apiUrl = `${this.baseUrl}/models/${model}`;
+      // Use chat completions endpoint
+      const apiUrl = `${this.baseUrl}/chat/completions`;
 
-      // Try the standard router request format
+      // Format request as OpenAI-compatible chat completion with image
       const requestBody = {
-        inputs: imageData,
-        parameters: {
-          max_new_tokens: 1024,
-          temperature: 0.1,
-        },
+        model: model,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: prompt
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: imageUrl
+                }
+              }
+            ]
+          }
+        ]
       };
 
-      console.log('[HuggingFace] OCR Request with router:', {
+      console.log('[HuggingFace] OCR Request (Chat Completion):', {
         url: apiUrl,
         hasApiKey: !!this.apiKey,
         model: model,
-        requestBodyPreview: {
-          hasInputs: !!requestBody.inputs,
-          hasParameters: !!requestBody.parameters
-        }
+        prompt: prompt.substring(0, 50) + '...'
       });
 
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
-          'Authorization': this.apiKey ? `Bearer ${this.apiKey}` : undefined,
+          'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
       });
 
-      const responseText = await response.text();
-      let parsedData;
-
-      // Handle plain text responses (like "Not Found")
-      if (responseText === "Not Found" || !responseText.startsWith('{')) {
-        throw new Error(`Model not found: ${responseText}`);
-      }
-
-      try {
-        parsedData = JSON.parse(responseText);
-      } catch {
-        throw new Error(`Invalid response format: ${responseText}`);
-      }
-
       if (!response.ok) {
-        console.error('[HuggingFace] Router API Error:', {
+        const errorText = await response.text();
+        console.error('[HuggingFace] API Error:', {
           status: response.status,
           statusText: response.statusText,
-          error: responseText,
-          model: model
+          error: errorText
         });
 
-        // Try alternative format for the router
-        if (response.status === 404) {
-          console.log('[HuggingFace] Trying task-based endpoint for image-to-text...');
-
-          const taskUrl = `${this.baseUrl.replace('/hf-inference', '')}/tasks/image-to-text`;
-          const taskBody = {
-            model: model,
-            inputs: imageData
-          };
-
-          console.log('[HuggingFace] Task URL:', taskUrl);
-
-          const taskResponse = await fetch(taskUrl, {
-            method: 'POST',
-            headers: {
-              'Authorization': this.apiKey ? `Bearer ${this.apiKey}` : undefined,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(taskBody),
-          });
-
-          if (taskResponse.ok) {
-            const taskData = await taskResponse.json();
-            console.log('[HuggingFace] Task endpoint response:', taskData);
-            return this.processOCRResponse(taskData, model, startTime);
-          }
-        }
-
-        throw new Error(
-          parsedData.error || parsedData.message || `HuggingFace API error (${response.status}): ${response.statusText}`
-        );
+        throw new Error(`HuggingFace API error (${response.status}): ${errorText}`);
       }
 
-      return this.processOCRResponse(parsedData, model, startTime);
+      const data = await response.json();
+
+      // Extract text from chat completion response
+      const extractedText = data.choices?.[0]?.message?.content || '';
+
+      if (!extractedText) {
+        console.warn('[HuggingFace] Empty response:', data);
+        throw new Error('No content in response');
+      }
+
+      // Check for truncation
+      const isTruncated = this.detectTruncation(extractedText);
+      if (isTruncated) {
+        console.warn('[HuggingFace] Response appears to be truncated:', {
+          length: extractedText.length,
+          lastChars: extractedText.slice(-100)
+        });
+      }
+
+      const processingTime = Date.now() - startTime;
+
+      return {
+        success: true,
+        text: extractedText,
+        markdown: model.includes('DeepSeek-OCR') ? extractedText : undefined,
+        model_used: model,
+        processing_time_ms: processingTime,
+        request_id: `ocr-${Date.now()}`,
+        truncated: isTruncated,
+        warning: isTruncated ? 'Response may be truncated - consider splitting large documents' : undefined
+      };
 
     } catch (error) {
       return {
@@ -392,60 +393,6 @@ export class HuggingFaceProvider extends BaseAIProvider {
     }
   }
 
-  /**
-   * Process the OCR response from different formats
-   */
-  private processOCRResponse(data: any, model: string, startTime: number): OCRGenerationResponse {
-    let extractedText: string;
-    let markdown: string | undefined;
-
-    // Handle different response formats
-    if (Array.isArray(data)) {
-      // Some models return an array with generated text
-      extractedText = data[0]?.generated_text || '';
-    } else if (data.generated_text) {
-      extractedText = data.generated_text;
-    } else if (data.text) {
-      extractedText = data.text;
-    } else if (data[0]?.generated_text) {
-      extractedText = data[0].generated_text;
-    } else if (typeof data === 'string') {
-      extractedText = data;
-    } else if (data.choices && data.choices[0]?.message?.content) {
-      extractedText = data.choices[0].message.content;
-    } else {
-      console.warn('[HuggingFace] Unexpected response format:', data);
-      extractedText = JSON.stringify(data);
-    }
-
-    // Check for truncation indicators
-    const isTruncated = this.detectTruncation(extractedText);
-    if (isTruncated) {
-      console.warn('[HuggingFace] Response appears to be truncated:', {
-        length: extractedText.length,
-        lastChars: extractedText.slice(-100),
-        warning: 'Consider splitting large documents or increasing max_tokens'
-      });
-    }
-
-    // If using DeepSeek-OCR, the output is typically in markdown format
-    if (model.includes('DeepSeek-OCR')) {
-      markdown = extractedText;
-    }
-
-    const processingTime = Date.now() - startTime;
-
-    return {
-      success: true,
-      text: extractedText,
-      markdown: markdown,
-      model_used: model,
-      processing_time_ms: processingTime,
-      request_id: `ocr-${Date.now()}`,
-      truncated: isTruncated,
-      warning: isTruncated ? 'Response may be truncated - consider splitting large documents' : undefined
-    };
-  }
 
   /**
    * Detect if the OCR response was truncated

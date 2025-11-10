@@ -113,7 +113,7 @@ export function AnimatedBeamDemo({
         </div>
 
         {/* Center - Two Processing Stages */}
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center gap-30">
           <Circle ref={centerRef1}>
             <LlamaIndex.Color size={28} />
           </Circle>
@@ -145,14 +145,14 @@ export function AnimatedBeamDemo({
         containerRef={containerRef}
         fromRef={imageRef}
         toRef={centerRef1}
-        curvature={0.4}
+        curvature={0.3}
         duration={5}
       />
       <AnimatedBeam
         containerRef={containerRef}
         fromRef={uploadRef}
         toRef={centerRef1}
-        curvature={0.2}
+        curvature={0.15}
         delay={0.2}
         duration={5}
       />
@@ -168,7 +168,7 @@ export function AnimatedBeamDemo({
         containerRef={containerRef}
         fromRef={dbRef}
         toRef={centerRef1}
-        curvature={-0.2}
+        curvature={-0.15}
         delay={0.6}
         duration={5}
       />
@@ -188,7 +188,7 @@ export function AnimatedBeamDemo({
         containerRef={containerRef}
         fromRef={centerRef2}
         toRef={searchRef}
-        curvature={-0.3}
+        curvature={-0.25}
         delay={1.2}
         duration={5}
       />
@@ -196,7 +196,7 @@ export function AnimatedBeamDemo({
         containerRef={containerRef}
         fromRef={centerRef2}
         toRef={messageRef}
-        curvature={-0.15}
+        curvature={-0.12}
         delay={1.5}
         duration={5}
       />
@@ -212,7 +212,7 @@ export function AnimatedBeamDemo({
         containerRef={containerRef}
         fromRef={centerRef2}
         toRef={minimaxRef}
-        curvature={0.15}
+        curvature={0.12}
         delay={2.1}
         duration={5}
       />
@@ -247,15 +247,36 @@ export default function RAGPage() {
         {/* Process Labels */}
         <div className="flex justify-center gap-8 mb-8 text-sm">
           <div className="text-center">
-            <div className="font-semibold text-blue-600">Input</div>
+            <div className="font-semibold">
+              <AuroraText
+                colors={["#3b82f6", "#8b5cf6", "#ec4899", "#06b6d4", "#10b981"]}
+                speed={1.5}
+              >
+                Input
+              </AuroraText>
+            </div>
             <div className="text-muted-foreground">Upload & Parse</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-purple-600">Process</div>
+            <div className="font-semibold">
+              <AuroraText
+                colors={["#3b82f6", "#8b5cf6", "#ec4899", "#06b6d4", "#10b981"]}
+                speed={1.5}
+              >
+                Process
+              </AuroraText>
+            </div>
             <div className="text-muted-foreground">Embed & Index</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-green-600">Output</div>
+            <div className="font-semibold">
+              <AuroraText
+                colors={["#3b82f6", "#8b5cf6", "#ec4899", "#06b6d4", "#10b981"]}
+                speed={1.5}
+              >
+                Output
+              </AuroraText>
+            </div>
             <div className="text-muted-foreground">Search & Generate</div>
           </div>
         </div>
@@ -263,16 +284,16 @@ export default function RAGPage() {
         {/* Description */}
         <div className="text-center mb-8 px-2">
           <p className="text-lg text-muted-foreground mb-4">
-            Query your documents with AI-powered semantic search using free Hugging Face embeddings
+            Transform your documents into intelligent, searchable knowledge with AI-powered semantic understanding
           </p>
           <div className="flex items-center justify-center gap-2">
             <Badge variant="secondary" className="text-xs">
               <Sparkles className="w-3 h-3 mr-1" />
-              Free Tier: 30,000 requests/month
+              Vector Embeddings
             </Badge>
             <Badge variant="outline" className="text-xs">
               <Brain className="w-3 h-3 mr-1" />
-              Hugging Face API
+              Semantic Search
             </Badge>
           </div>
         </div>
