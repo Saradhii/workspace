@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsContents,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/components/radix/tabs";
 import { Card } from "@/components/ui/card";
-import { FileText, Brain, Sparkles } from "lucide-react";
+import { FileText, Brain, Sparkles, Workflow } from "lucide-react";
+import { RAGStudioMain } from "./components/rag-studio-main";
 
 export default function RAGStudioPage() {
   return (
-    <div className="flex-1 p-4 md:p-8">
+    <div className="flex-1 pt-1 px-4 pb-4 md:pt-2 md:px-8 md:pb-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -18,8 +24,12 @@ export default function RAGStudioPage() {
         </div>
 
         {/* Tabbed Interface */}
-        <Tabs defaultValue="ocr" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
+        <Tabs defaultValue="studio" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-4">
+            <TabsTrigger value="studio" className="flex items-center gap-2">
+              <Workflow className="h-4 w-4" />
+              <span>RAG Studio</span>
+            </TabsTrigger>
             <TabsTrigger value="ocr" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               <span>OCR Test</span>
@@ -34,35 +44,41 @@ export default function RAGStudioPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="ocr" className="mt-0">
-            <Card className="p-0 overflow-hidden border-0">
-              <iframe
-                src="/test-ocr"
-                className="w-full h-[calc(100vh-250px)] border-0"
-                title="OCR Test"
-              />
-            </Card>
-          </TabsContent>
+          <TabsContents>
+            <TabsContent value="studio" className="mt-0">
+              <RAGStudioMain />
+            </TabsContent>
 
-          <TabsContent value="embeddings" className="mt-0">
-            <Card className="p-0 overflow-hidden border-0">
-              <iframe
-                src="/test-embeddings"
-                className="w-full h-[calc(100vh-250px)] border-0"
-                title="Embeddings Test"
-              />
-            </Card>
-          </TabsContent>
+            <TabsContent value="ocr" className="mt-0">
+              <Card className="p-0 overflow-hidden border-0">
+                <iframe
+                  src="/test-ocr"
+                  className="w-full h-[calc(100vh-250px)] border-0"
+                  title="OCR Test"
+                />
+              </Card>
+            </TabsContent>
 
-          <TabsContent value="hf-embeddings" className="mt-0">
-            <Card className="p-0 overflow-hidden border-0">
-              <iframe
-                src="/test-hf-embeddings"
-                className="w-full h-[calc(100vh-250px)] border-0"
-                title="HuggingFace Embeddings Test"
-              />
-            </Card>
-          </TabsContent>
+            <TabsContent value="embeddings" className="mt-0">
+              <Card className="p-0 overflow-hidden border-0">
+                <iframe
+                  src="/test-embeddings"
+                  className="w-full h-[calc(100vh-250px)] border-0"
+                  title="Embeddings Test"
+                />
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="hf-embeddings" className="mt-0">
+              <Card className="p-0 overflow-hidden border-0">
+                <iframe
+                  src="/test-hf-embeddings"
+                  className="w-full h-[calc(100vh-250px)] border-0"
+                  title="HuggingFace Embeddings Test"
+                />
+              </Card>
+            </TabsContent>
+          </TabsContents>
         </Tabs>
       </div>
     </div>

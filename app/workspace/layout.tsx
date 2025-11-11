@@ -2,6 +2,7 @@
 
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/aceternity-sidebar-v2";
 import { DotBackground } from "@/components/ui/dot-background";
+import { ScrollArea } from "@/components/ui/scroll-area";
 // import { GridBackground } from "@/components/ui/grid-background";
 import {
   IconArrowLeft,
@@ -99,9 +100,11 @@ import { Code } from "lucide-react";
         </SidebarBody>
       </Sidebar>
       <div className="flex flex-1 overflow-hidden relative z-10 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]">
-        <div className="flex h-full w-full flex-1 flex-col gap-2 bg-white/30 p-4 md:p-8 dark:bg-neutral-900/30" suppressHydrationWarning>
-          {children}
-        </div>
+        <ScrollArea className="h-full w-full">
+          <div className="flex h-full w-full flex-1 flex-col gap-2 bg-white/30 p-4 md:p-8 dark:bg-neutral-900/30" suppressHydrationWarning>
+            {children}
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );

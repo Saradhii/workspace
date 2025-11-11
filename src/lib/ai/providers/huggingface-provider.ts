@@ -201,8 +201,11 @@ export class HuggingFaceProvider extends BaseAIProvider {
     }
 
     try {
+      // Use the old hf-inference endpoint for embeddings (router /v1 only supports chat)
+      const embeddingsBaseUrl = 'https://router.huggingface.co/hf-inference';
+
       const response = await fetch(
-        `${this.baseUrl}/models/${request.model}`,
+        `${embeddingsBaseUrl}/models/${request.model}`,
         {
           method: 'POST',
           headers: {
