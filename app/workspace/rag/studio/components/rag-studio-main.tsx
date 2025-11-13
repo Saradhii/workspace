@@ -22,6 +22,8 @@ export function RAGStudioMain() {
     results: "idle",
   });
 
+  const [searchResults, setSearchResults] = useState<any>(null);
+
   return (
     <div className="w-full min-h-full space-y-4">
       {/* Pipeline Visualization Header */}
@@ -34,6 +36,9 @@ export function RAGStudioMain() {
         <DocumentIngestionCard
           onStatusChange={(status) =>
             setPipelineStatus(prev => ({ ...prev, ingestion: status }))
+          }
+          onProcessingStatusChange={(status) =>
+            setPipelineStatus(prev => ({ ...prev, processing: status }))
           }
         />
         <TextProcessingCard
@@ -55,11 +60,16 @@ export function RAGStudioMain() {
           onStatusChange={(status) =>
             setPipelineStatus(prev => ({ ...prev, query: status }))
           }
+          onSearchComplete={(results) => {
+            setSearchResults(results);
+            setPipelineStatus(prev => ({ ...prev, results: "active" }));
+          }}
         />
         <ResultsCard
           onStatusChange={(status) =>
             setPipelineStatus(prev => ({ ...prev, results: status }))
           }
+          searchResults={searchResults}
         />
       </div>
     </div>

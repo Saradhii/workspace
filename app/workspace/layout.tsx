@@ -79,6 +79,9 @@ import { Code } from "lucide-react";
     },
   ];
 
+  // Check if current route is RAG-related
+  const isRAGRoute = pathname?.startsWith('/workspace/rag');
+
   return (
     <div className="relative flex w-full h-screen overflow-hidden bg-black/[0.96] antialiased">
       <DotBackground />
@@ -100,11 +103,17 @@ import { Code } from "lucide-react";
         </SidebarBody>
       </Sidebar>
       <div className="flex flex-1 overflow-hidden relative z-10 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]">
-        <ScrollArea className="h-full w-full">
+        {isRAGRoute ? (
+          <ScrollArea className="h-full w-full">
+            <div className="flex h-full w-full flex-1 flex-col gap-2 bg-white/30 p-4 md:p-8 dark:bg-neutral-900/30" suppressHydrationWarning>
+              {children}
+            </div>
+          </ScrollArea>
+        ) : (
           <div className="flex h-full w-full flex-1 flex-col gap-2 bg-white/30 p-4 md:p-8 dark:bg-neutral-900/30" suppressHydrationWarning>
             {children}
           </div>
-        </ScrollArea>
+        )}
       </div>
     </div>
   );
