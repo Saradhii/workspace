@@ -233,6 +233,7 @@ export async function GET() {
         extractionModel: doc.extractionModel,
         textLength: doc.extractedText.length,
         chunkCount: doc.chunkCount,
+        hasChunks: !!(doc.chunkCount && doc.chunkCount > 0),
         hasEmbeddings: !!doc.embeddings,
         timestamp: doc.timestamp,
       })),
