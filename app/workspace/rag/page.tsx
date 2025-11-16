@@ -252,7 +252,7 @@ export default function RAGPage() {
             <HoverBorderGradient
               containerClassName="rounded-full"
               as="button"
-              className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2 px-6 py-2 text-base font-semibold"
+              className="dark:bg-black bg-white cursor-pointer text-black dark:text-white flex items-center space-x-2 px-6 py-2 text-base font-semibold"
             >
               <Cpu className="h-4 w-4" />
               <span>Try RAG Studio</span>

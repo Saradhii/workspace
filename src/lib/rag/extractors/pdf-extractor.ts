@@ -43,8 +43,7 @@ export async function extractTextFromPDF(
     // Try text extraction first
     // Use dynamic import to avoid ESM/CommonJS issues
     const pdfParse = await import('pdf-parse');
-    const pdf = pdfParse.default || pdfParse;
-    const pdfData = await pdf(buffer);
+    const pdfData = await pdfParse.default(buffer);
 
     const hasText = pdfData.text && pdfData.text.trim().length > 100;
     const pageCount = pdfData.numpages || 0;
@@ -200,8 +199,7 @@ export async function analyzePDFTextContent(buffer: Buffer): Promise<{
   try {
     // Use dynamic import to avoid ESM/CommonJS issues
     const pdfParse = await import('pdf-parse');
-    const pdf = pdfParse.default || pdfParse;
-    const pdfData = await pdf(buffer);
+    const pdfData = await pdfParse.default(buffer);
     const textLength = pdfData.text?.length || 0;
     const pageCount = pdfData.numpages || 0;
     const estimatedTextPerPage = pageCount > 0 ? textLength / pageCount : 0;
