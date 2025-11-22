@@ -11,6 +11,51 @@ export default function Home() {
 
   return (
     <div className="bg-background relative h-screen w-full overflow-hidden">
+      {/* Dashed border frame with overlapping corners */}
+      {/* Top border - extends past vertical borders */}
+      <div
+        className="absolute border-t-2 border-dashed border-white pointer-events-none z-20"
+        style={{
+          top: '90px',
+          left: '120px',
+          right: '120px',
+          height: 0
+        }}
+      />
+
+      {/* Bottom border - extends past vertical borders */}
+      <div
+        className="absolute border-t-2 border-dashed border-white pointer-events-none z-20"
+        style={{
+          bottom: '90px',
+          left: '120px',
+          right: '120px',
+          height: 0
+        }}
+      />
+
+      {/* Left border - overlaps horizontal borders */}
+      <div
+        className="absolute border-l-2 border-dashed border-white pointer-events-none z-20"
+        style={{
+          left: '150px',
+          top: '60px',
+          bottom: '60px',
+          width: 0
+        }}
+      />
+
+      {/* Right border - overlaps horizontal borders */}
+      <div
+        className="absolute border-r-2 border-dashed border-white pointer-events-none z-20"
+        style={{
+          right: '150px',
+          top: '60px',
+          bottom: '60px',
+          width: 0
+        }}
+      />
+
       <DottedGlowBackground
         className="pointer-events-none mask-radial-to-90% mask-radial-at-center opacity-20 dark:opacity-100"
         opacity={0.3}
