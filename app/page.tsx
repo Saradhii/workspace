@@ -12,46 +12,46 @@ export default function Home() {
   return (
     <div className="bg-background relative h-screen w-full overflow-hidden">
       {/* Dashed border frame with overlapping corners */}
-      {/* Top border - extends past vertical borders */}
+      {/* Top border - extends full screen width */}
       <div
         className="absolute border-t-2 border-dashed border-white pointer-events-none z-20"
         style={{
           top: '90px',
-          left: '120px',
-          right: '120px',
+          left: '0px',
+          right: '0px',
           height: 0
         }}
       />
 
-      {/* Bottom border - extends past vertical borders */}
+      {/* Bottom border - extends full screen width */}
       <div
         className="absolute border-t-2 border-dashed border-white pointer-events-none z-20"
         style={{
           bottom: '90px',
-          left: '120px',
-          right: '120px',
+          left: '0px',
+          right: '0px',
           height: 0
         }}
       />
 
-      {/* Left border - overlaps horizontal borders */}
+      {/* Left border - overlaps horizontal borders and extends full height */}
       <div
         className="absolute border-l-2 border-dashed border-white pointer-events-none z-20"
         style={{
-          left: '150px',
-          top: '60px',
-          bottom: '60px',
+          left: '250px',
+          top: '0px',
+          bottom: '0px',
           width: 0
         }}
       />
 
-      {/* Right border - overlaps horizontal borders */}
+      {/* Right border - overlaps horizontal borders and extends full height */}
       <div
         className="absolute border-r-2 border-dashed border-white pointer-events-none z-20"
         style={{
-          right: '150px',
-          top: '60px',
-          bottom: '60px',
+          right: '250px',
+          top: '0px',
+          bottom: '0px',
           width: 0
         }}
       />
