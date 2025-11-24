@@ -1,6 +1,7 @@
 "use client";
 
 import DottedGlowBackground from "@/components/ui/dotted-glow-background"
+import { TubesCursor } from "@/components/ui/tubes-cursor"
 import { HeroText } from "@/components/hero-text"
 import AIModelsCard from "@/components/ai-models-card"
 import { ShimmerButton } from "@/components/ui/shimmer-button"
@@ -11,6 +12,16 @@ export default function Home() {
 
   return (
     <div className="bg-background relative h-screen w-full overflow-hidden">
+      {/* 3D Tubes Cursor Effect - Bottom Layer (Follows Mouse, Click to Change Colors) */}
+      <TubesCursor
+        tubeColors={["#f967fb", "#53bc28", "#6958d5"]}
+        lightColors={["#83f36e", "#fe8a2e", "#ff008a", "#60aed5"]}
+        lightIntensity={200}
+        enableClickColorChange={true}
+        disableOnMobile={true}
+      />
+
+      {/* Dotted Background Effect - Middle Layer */}
       <DottedGlowBackground
         className="pointer-events-none mask-radial-to-90% mask-radial-at-center opacity-20 dark:opacity-100"
         opacity={0.3}
