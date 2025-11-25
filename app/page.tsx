@@ -16,9 +16,9 @@ export default function Home() {
       <TubesCursor
         tubeColors={["#f967fb", "#53bc28", "#6958d5"]}
         lightColors={["#83f36e", "#fe8a2e", "#ff008a", "#60aed5"]}
-        lightIntensity={200}
+        lightIntensity={600}
         enableClickColorChange={true}
-        disableOnMobile={true}
+        disableOnMobile={false}
       />
 
       {/* Dotted Background Effect - Middle Layer */}

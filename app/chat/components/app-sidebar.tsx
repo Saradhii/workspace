@@ -31,7 +31,7 @@ export function AppSidebar() {
                 <span className="text-lg font-bold">C</span>
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">Chatbot</span>
+                <span className="truncate font-semibold">Studio</span>
                 <span className="truncate text-xs">AI Assistant</span>
               </div>
             </SidebarMenuButton>

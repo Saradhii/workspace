@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Chatbot",
-  description: "A modern AI-powered chat application",
+  title: "Studio",
+  description: "A modern AI content creation studio",
 };
 
 export default function RootLayout({
@@ -32,7 +32,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                var theme = localStorage.getItem('chatbot-theme') || 'dark';
+                var theme = localStorage.getItem('studio-theme') || 'dark';
                 if (theme === 'dark') {
                   document.documentElement.classList.add('dark');
                 } else {
@@ -49,7 +49,7 @@ export default function RootLayout({
       >
         <ThemeProvider
           defaultTheme="dark"
-          storageKey="chatbot-theme"
+          storageKey="studio-theme"
           enableSystem={false}
         >
           <FloatingThemeToggle />
