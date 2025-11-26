@@ -1,36 +1,19 @@
 "use client";
 
 import React from "react";
-import { AnimatePresence, motion } from "motion/react";
-import { CanvasRevealEffect } from "@/components/ui/canvas-reveal-effect";
+import { motion } from "motion/react";
 
 interface ImageLoadingCardProps {
   colorTheme?: "chroma" | "neta-lumina";
 }
 
 export function ImageLoadingCard({ colorTheme = "chroma" }: ImageLoadingCardProps) {
-  return (
-    <div className="relative w-[600px] h-[400px] rounded-lg shadow-lg overflow-hidden">
+  const backgroundClass = colorTheme === "neta-lumina"
+    ? "bg-gradient-to-br from-emerald-900 to-emerald-800 dark:from-gray-900 dark:to-emerald-900"
+    : "bg-gradient-to-br from-gray-900 to-gray-800 dark:from-black dark:to-gray-900";
 
-      <AnimatePresence>
-        <div className="h-full w-full absolute inset-0">
-          <CanvasRevealEffect
-            animationSpeed={2}
-            containerClassName={colorTheme === "neta-lumina" ? "bg-gradient-to-br from-emerald-900 to-emerald-800 dark:from-gray-900 dark:to-emerald-900" : "bg-gradient-to-br from-gray-900 to-gray-800 dark:from-black dark:to-gray-900"}
-            colors={colorTheme === "neta-lumina" ? [
-              [16, 185, 129],  // Emerald-500
-              [5, 150, 105],   // Emerald-600
-              [4, 120, 87],    // Emerald-700
-            ] : [
-              [236, 72, 153],  // Pink
-              [232, 121, 249], // Purple
-              [139, 92, 246],  // Violet
-            ]}
-            dotSize={2}
-            showGradient={true}
-          />
-        </div>
-      </AnimatePresence>
+  return (
+    <div className={`relative w-[600px] h-[400px] rounded-lg shadow-lg overflow-hidden ${backgroundClass}`}>
 
       {/* Loading content */}
       <div className="relative z-20 h-full flex flex-col items-center justify-center">
