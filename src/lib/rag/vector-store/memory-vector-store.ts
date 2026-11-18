@@ -312,7 +312,9 @@ class MemoryVectorStore {
 // Singleton Instance
 // ========================
 
-const vectorStore = new MemoryVectorStore();
+// Shared across route bundles for the same reason as the document store.
+const globalForStore = globalThis as unknown as { __ragVectorStore?: MemoryVectorStore };
+const vectorStore = (globalForStore.__ragVectorStore ??= new MemoryVectorStore());
 
 // Auto-cleanup on process exit (for server-side)
 if (typeof process !== 'undefined') {

@@ -1,95 +1,73 @@
 "use client";
 
-import {
-  Tabs,
-  TabsContent,
-  TabsContents,
-  TabsList,
-  TabsTrigger,
-} from "@/components/animate-ui/components/radix/tabs";
-import { Card } from "@/components/ui/card";
-import { FileText, Brain, Sparkles, Workflow } from "lucide-react";
+import { useState } from "react";
+import Link from "next/link";
+import { ChevronLeft, FlaskConical, Lock, ScanText, Sparkles, Waypoints } from "lucide-react";
 import { RAGStudioMain } from "./components/rag-studio-main";
-import { PointerHighlight } from "@/components/ui/pointer-highlight";
+import { Panel, Segmented } from "./components/panel";
+
+type View = "studio" | "ocr" | "embeddings" | "hf-embeddings";
+
+const LABS: Record<Exclude<View, "studio">, { src: string; title: string }> = {
+  ocr: { src: "/test-ocr", title: "OCR lab" },
+  embeddings: { src: "/test-embeddings", title: "Embeddings lab" },
+  "hf-embeddings": { src: "/test-hf-embeddings", title: "HuggingFace embeddings lab" },
+};
 
 export default function RAGStudioPage() {
+  const [view, setView] = useState<View>("studio");
+
+  const switcher = (
+    <Segmented<View>
+      className="max-w-full shrink-0 overflow-x-auto [scrollbar-width:none]"
+      value={view}
+      onChange={setView}
+      options={[
+        { value: "studio", label: <><Waypoints className="h-3.5 w-3.5" /> Studio</> },
+        { value: "ocr", label: <><ScanText className="h-3.5 w-3.5" /> OCR</>, title: "OCR lab" },
+        { value: "embeddings", label: <><FlaskConical className="h-3.5 w-3.5" /> Embeddings</>, title: "Embeddings lab" },
+        { value: "hf-embeddings", label: <><Sparkles className="h-3.5 w-3.5" /> HF</>, title: "HuggingFace embeddings lab" },
+      ]}
+    />
+  );
+
   return (
-    <div className="flex-1 pt-1 px-4 pb-4 md:pt-2 md:px-8 md:pb-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">RAG Studio</h1>
-          <p className="text-muted-foreground mb-3">
-            All-in-one workspace for OCR, embeddings, and semantic search testing
-          </p>
-          <PointerHighlight>
-            <p className="text-sm font-medium bg-gradient-to-r from-blue-400 to-cyan-400 dark:from-blue-300 dark:to-cyan-300 bg-clip-text text-transparent inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-blue-500/20 dark:border-blue-400/20 bg-blue-500/5 dark:bg-blue-400/5">
-              <svg className="w-4 h-4 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              Your data stays private with secure, open-source AI models
-            </p>
-          </PointerHighlight>
+    <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4 lg:h-[calc(100vh-4rem)]">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/workspace/rag"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.02] text-neutral-400 transition hover:text-neutral-100"
+            aria-label="Back to RAG overview"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Link>
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-[conic-gradient(from_180deg,#8b5cf6,#22d3ee,#ec4899,#8b5cf6)] p-px">
+            <div className="flex h-full w-full items-center justify-center rounded-[11px] bg-neutral-950">
+              <Waypoints className="h-4 w-4 text-neutral-100" />
+            </div>
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold leading-tight tracking-tight text-neutral-50">RAG Studio</h1>
+            <p className="text-xs text-neutral-500">Turn documents into grounded, cited answers</p>
+          </div>
         </div>
+        <span className="flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/[0.06] px-3 py-1 text-[11px] font-medium text-emerald-200/90">
+          <Lock className="h-3 w-3" />
+          Private by design · in-memory · open-source models
+        </span>
+      </header>
 
-        {/* Tabbed Interface */}
-        <Tabs defaultValue="studio" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-4">
-            <TabsTrigger value="studio" className="flex items-center gap-2">
-              <Workflow className="h-4 w-4" />
-              <span>RAG Studio</span>
-            </TabsTrigger>
-            <TabsTrigger value="ocr" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              <span>OCR Test</span>
-            </TabsTrigger>
-            <TabsTrigger value="embeddings" className="flex items-center gap-2">
-              <Brain className="h-4 w-4" />
-              <span>Embeddings</span>
-            </TabsTrigger>
-            <TabsTrigger value="hf-embeddings" className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" />
-              <span>HF Embeddings</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContents>
-            <TabsContent value="studio" className="mt-0">
-              <RAGStudioMain />
-            </TabsContent>
-
-            <TabsContent value="ocr" className="mt-0">
-              <Card className="p-0 overflow-hidden border-0">
-                <iframe
-                  src="/test-ocr"
-                  className="w-full h-[calc(100vh-250px)] border-0"
-                  title="OCR Test"
-                />
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="embeddings" className="mt-0">
-              <Card className="p-0 overflow-hidden border-0">
-                <iframe
-                  src="/test-embeddings"
-                  className="w-full h-[calc(100vh-250px)] border-0"
-                  title="Embeddings Test"
-                />
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="hf-embeddings" className="mt-0">
-              <Card className="p-0 overflow-hidden border-0">
-                <iframe
-                  src="/test-hf-embeddings"
-                  className="w-full h-[calc(100vh-250px)] border-0"
-                  title="HuggingFace Embeddings Test"
-                />
-              </Card>
-            </TabsContent>
-          </TabsContents>
-        </Tabs>
-      </div>
+      {view === "studio" ? (
+        <RAGStudioMain toolbar={switcher} />
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
+          <div className="flex justify-end">{switcher}</div>
+          <Panel className="flex-1">
+            <iframe src={LABS[view].src} title={LABS[view].title} className="h-[calc(100vh-12rem)] w-full border-0 lg:h-full" />
+          </Panel>
+        </div>
+      )}
     </div>
   );
 }

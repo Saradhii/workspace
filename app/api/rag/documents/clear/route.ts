@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import documentStore from '@/lib/rag/document-store';
+import vectorStore from '@/lib/rag/vector-store/memory-vector-store';
 
 /**
  * Clear all documents from memory
@@ -10,6 +11,7 @@ export async function POST(request: NextRequest) {
     const count = stats.totalDocuments;
 
     documentStore.clear();
+    vectorStore.clear();
 
     return NextResponse.json({
       success: true,

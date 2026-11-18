@@ -235,6 +235,8 @@ export async function GET() {
         chunkCount: doc.chunkCount,
         hasChunks: !!(doc.chunkCount && doc.chunkCount > 0),
         hasEmbeddings: !!doc.embeddings,
+        embeddingModel: doc.embeddingModel,
+        dimensions: doc.embeddings?.[0]?.length,
         timestamp: doc.timestamp,
       })),
       stats: {

@@ -27,6 +27,7 @@ export async function GET() {
         dimensions: stats.dimensions,
         documentCount: stats.documentCount,
         indexedDocuments: indexedCount,
+        indexedDocumentIds: stats.indexedDocuments,
         totalDocumentsWithEmbeddings: totalDocuments,
         memoryUsageMB: usedMemoryMB.toFixed(2),
         remainingMemoryMB: remainingMemoryMB.toFixed(2),

@@ -230,7 +230,10 @@ class DocumentStore {
 // Singleton Instance
 // ========================
 
-const documentStore = new DocumentStore();
+// Next.js can load this module once per route bundle (especially in dev), which would give
+// every API route its own empty store. Pin the instance to globalThis so all routes share it.
+const globalForStore = globalThis as unknown as { __ragDocumentStore?: DocumentStore };
+const documentStore = (globalForStore.__ragDocumentStore ??= new DocumentStore());
 
 // Auto-cleanup on process exit (for server-side)
 if (typeof process !== 'undefined') {

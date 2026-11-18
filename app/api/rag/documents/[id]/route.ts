@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import documentStore from '@/lib/rag/document-store';
+import vectorStore from '@/lib/rag/vector-store/memory-vector-store';
 
 /**
  * Get a specific document by ID
@@ -63,6 +64,7 @@ export async function DELETE(
   try {
     const { id } = params;
     const deleted = documentStore.remove(id);
+    vectorStore.removeDocument(id);
 
     if (!deleted) {
       return NextResponse.json(

@@ -1,76 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { BentoGrid } from "@/components/ui/bento-grid";
-import { PipelineVisualizer } from "./pipeline-visualizer";
-import { DocumentIngestionCard } from "./document-ingestion-card";
-import { TextProcessingCard } from "./text-processing-card";
-import { EmbeddingCard } from "./embedding-card";
-import { VectorStoreCard } from "./vector-store-card";
-import { QueryInterfaceCard } from "./query-interface-card";
-import { ResultsCard } from "./results-card";
-import { Badge } from "@/components/ui/badge";
-import { Activity } from "lucide-react";
+import { useMemo } from "react";
+import { useRagStudio } from "../lib/use-rag-studio";
+import { LibraryPanel } from "./library-panel";
+import { AskPanel } from "./ask-panel";
+import { InspectorPanel } from "./inspector-panel";
+import { PipelineRail } from "./pipeline-rail";
 
-export function RAGStudioMain() {
-  const [pipelineStatus, setPipelineStatus] = useState({
-    ingestion: "idle",
-    processing: "idle",
-    embedding: "idle",
-    storage: "idle",
-    query: "idle",
-    results: "idle",
-  });
-
-  const [searchResults, setSearchResults] = useState<any>(null);
+/**
+ * Three-pane RAG workbench:
+ *   Knowledge base (sources + pipeline state) · Ask (grounded chat) · Inspector (chunks, settings, index)
+ */
+export function RAGStudioMain({ toolbar }: { toolbar?: React.ReactNode }) {
+  const studio = useRagStudio();
+  const runningStages = useMemo(
+    () => new Set(Object.values(studio.running).filter(Boolean) as string[]),
+    [studio.running]
+  );
 
   return (
-    <div className="w-full min-h-full space-y-4">
-      {/* Pipeline Visualization Header */}
-      <div>
-        <PipelineVisualizer status={pipelineStatus} />
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <PipelineRail counts={studio.counts} runningStages={runningStages} ready={studio.counts.indexed > 0} />
+        {toolbar}
       </div>
-
-      {/* Main Bento Grid - Pipeline Stages */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <DocumentIngestionCard
-          onStatusChange={(status) =>
-            setPipelineStatus(prev => ({ ...prev, ingestion: status }))
-          }
-          onProcessingStatusChange={(status) =>
-            setPipelineStatus(prev => ({ ...prev, processing: status }))
-          }
-        />
-        <TextProcessingCard
-          onStatusChange={(status) =>
-            setPipelineStatus(prev => ({ ...prev, processing: status }))
-          }
-        />
-        <EmbeddingCard
-          onStatusChange={(status) =>
-            setPipelineStatus(prev => ({ ...prev, embedding: status }))
-          }
-        />
-        <VectorStoreCard
-          onStatusChange={(status) =>
-            setPipelineStatus(prev => ({ ...prev, storage: status }))
-          }
-        />
-        <QueryInterfaceCard
-          onStatusChange={(status) =>
-            setPipelineStatus(prev => ({ ...prev, query: status }))
-          }
-          onSearchComplete={(results) => {
-            setSearchResults(results);
-            setPipelineStatus(prev => ({ ...prev, results: "active" }));
-          }}
-        />
-        <ResultsCard
-          onStatusChange={(status) =>
-            setPipelineStatus(prev => ({ ...prev, results: status }))
-          }
-          searchResults={searchResults}
-        />
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_340px]">
+        <LibraryPanel studio={studio} />
+        <AskPanel studio={studio} />
+        <InspectorPanel studio={studio} className="lg:col-span-2 xl:col-span-1" />
       </div>
     </div>
   );
