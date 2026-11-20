@@ -10,7 +10,7 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <div className="bg-background relative h-screen w-full overflow-hidden">
+    <div className="bg-background relative h-dvh w-full overflow-hidden">
       {/* Dotted Background Effect - Middle Layer */}
       <DottedGlowBackground
         className="pointer-events-none mask-radial-to-90% mask-radial-at-center opacity-20 dark:opacity-100"

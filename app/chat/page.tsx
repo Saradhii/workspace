@@ -321,7 +321,7 @@ export default function ChatPage() {
     <SidebarProvider defaultOpen={true}>
       <AppSidebar />
       <SidebarInset>
-        <div className="flex h-screen flex-col">
+        <div className="flex h-dvh flex-col">
           <ChatHeader
             selectedVisibilityType={selectedVisibilityType}
             onVisibilityChange={setSelectedVisibilityType}
