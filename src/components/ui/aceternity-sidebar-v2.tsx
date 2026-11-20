@@ -92,6 +92,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     };
   }, []);
 
+  // Touch screens have no hover, so tapping the rail toggles the labels there.
+  const handleClick = () => {
+    if (window.matchMedia("(hover: none)").matches) {
+      setIsOpen(!isOpen);
+    }
+  };
+
   return (
     <SidebarProvider open={isOpen} setOpen={setIsOpen} animate={animate}>
       <div
@@ -101,6 +108,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
       >
         <motion.div
           className="relative h-full bg-gray-100 dark:bg-neutral-800"

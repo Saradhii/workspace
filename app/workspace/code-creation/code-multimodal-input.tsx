@@ -93,7 +93,7 @@ function PureCodeMultimodalInput({
             maxHeight={60}
             minHeight={44}
             onChange={handleInput}
-            placeholder="Describe the code you want to generate..."
+            placeholder="Describe the code you need..."
             ref={textareaRef}
             rows={1}
             value={input}

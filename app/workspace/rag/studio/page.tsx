@@ -64,7 +64,7 @@ export default function RAGStudioPage() {
         <div className="flex min-h-0 flex-1 flex-col gap-3">
           <div className="flex justify-end">{switcher}</div>
           <Panel className="flex-1">
-            <iframe src={LABS[view].src} title={LABS[view].title} className="h-[calc(100vh-12rem)] w-full border-0 lg:h-full" />
+            <iframe src={LABS[view].src} title={LABS[view].title} className="h-[calc(100dvh-14rem)] w-full border-0 lg:h-full" />
           </Panel>
         </div>
       )}
