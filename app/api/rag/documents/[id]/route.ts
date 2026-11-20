@@ -7,10 +7,10 @@ import vectorStore from '@/lib/rag/vector-store/memory-vector-store';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
     const document = documentStore.get(id);
 
     if (!document) {
@@ -59,10 +59,10 @@ export async function GET(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
     const deleted = documentStore.remove(id);
     vectorStore.removeDocument(id);
 

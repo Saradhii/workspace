@@ -36,7 +36,6 @@ type HighlightContextType<T extends string> = {
 };
 
 const HighlightContext = React.createContext<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   HighlightContextType<any> | undefined
 >(undefined);
 
@@ -402,7 +401,7 @@ function HighlightItem<T extends React.ElementType>({
   React.useImperativeHandle(ref, () => localRef.current as HTMLDivElement);
 
   React.useEffect(() => {
-    if (mode !== 'parent') return;
+    if (mode !== 'parent') return undefined;
     let rafId: number;
     let previousBounds: Bounds | null = null;
     const shouldUpdateBounds =
@@ -437,7 +436,7 @@ function HighlightItem<T extends React.ElementType>({
       setActiveClassName(activeClassName ?? '');
     } else if (!activeValue) clearBounds();
 
-    if (shouldUpdateBounds) return () => cancelAnimationFrame(rafId);
+    return shouldUpdateBounds ? () => cancelAnimationFrame(rafId) : undefined;
   }, [
     mode,
     isActive,

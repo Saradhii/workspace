@@ -195,7 +195,7 @@ export class HuggingFaceProvider extends BaseAIProvider {
     return models;
   }
 
-  async getEmbeddings(request: BaseEmbeddingRequest): Promise<BaseEmbeddingResponse> {
+  async createEmbeddings(request: BaseEmbeddingRequest): Promise<BaseEmbeddingResponse> {
     if (!this.apiKey) {
       throw new Error('Hugging Face API key not configured');
     }
@@ -278,7 +278,7 @@ export class HuggingFaceProvider extends BaseAIProvider {
    */
   async performOCR(request: OCRGenerationRequest): Promise<OCRGenerationResponse> {
     if (!this.initialized) {
-      await this.initialize({});
+      await this.initialize({ type: 'huggingface', apiKey: this.apiKey });
     }
 
     // Add :novita provider suffix for DeepSeek-OCR
@@ -434,7 +434,7 @@ export class HuggingFaceProvider extends BaseAIProvider {
       (text.match(/-/g) && text.slice(-10).match(/[-\*]/)) // Incomplete list
     );
 
-    return indicators || endsAbruptly || incompleteStructure;
+    return Boolean(indicators || endsAbruptly || incompleteStructure);
   }
 
   // Chat methods are not implemented for Hugging Face embeddings provider
@@ -442,7 +442,7 @@ export class HuggingFaceProvider extends BaseAIProvider {
     throw new Error('Chat not supported by Hugging Face provider');
   }
 
-  async streamChat(): Promise<any> {
+  async *streamChat(): AsyncGenerator<never> {
     throw new Error('Chat streaming not supported by Hugging Face provider');
   }
 

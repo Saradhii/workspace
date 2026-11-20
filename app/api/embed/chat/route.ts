@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
         break;
 
       case 'openrouter':
-        provider = new OpenRouterProvider();
+        provider = new OpenRouterProvider({ apiKey: process.env.OPENROUTER_API_KEY || '' });
         await provider.initialize({
           apiKey: process.env.OPENROUTER_API_KEY || '',
         });
@@ -63,7 +63,10 @@ export async function POST(request: NextRequest) {
         break;
 
       case 'chutes':
-        provider = new ChutesProvider();
+        provider = new ChutesProvider({
+          apiKey: process.env.CHUTES_API_KEY || '',
+          baseUrl: process.env.CHUTES_API_BASE_URL || 'https://llm.chutes.ai/v1',
+        });
         await provider.initialize({
           apiKey: process.env.CHUTES_API_KEY || '',
           baseUrl: process.env.CHUTES_API_BASE_URL || 'https://llm.chutes.ai/v1',
@@ -97,7 +100,7 @@ Question: ${query}
 Answer:`;
 
     // Generate response using the provider
-    const response = await provider.chat({
+    const response = await provider.createChat({
       model: modelId,
       messages: [
         {
@@ -110,7 +113,7 @@ Answer:`;
     });
 
     return NextResponse.json({
-      response: response.content || response.message?.content || 'No response generated',
+      response: response.content || 'No response generated',
       sources: sources || [],
     } as ChatResponse);
   } catch (error) {

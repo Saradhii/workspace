@@ -21,7 +21,7 @@ export async function GET() {
     "What is artificial intelligence?",
     "Machine learning is a subset of AI",
     "The sky is blue"
-  ];
+  ] as const;
 
   // Models to test
   const modelsToTest = ['qwen3-embedding', 'embeddinggemma', 'all-minilm'];
@@ -136,7 +136,7 @@ export async function GET() {
     try {
       console.log('\n🔄 Testing text clustering...');
       const clusters = await embeddingsService.clusterTexts(
-        testTexts,
+        [...testTexts],
         'qwen3-embedding',
         0.7
       );
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
       const row = [];
       for (let j = 0; j < embeddings.length; j++) {
         row.push(
-          parseFloat(embeddingsService.cosineSimilarity(embeddings[i], embeddings[j]).toFixed(6))
+          parseFloat(embeddingsService.cosineSimilarity(embeddings[i] ?? [], embeddings[j] ?? []).toFixed(6))
         );
       }
       similarityMatrix.push(row);
@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
         similarPairs.push({
           text1: texts[i],
           text2: texts[j],
-          similarity: similarityMatrix[i][j]
+          similarity: similarityMatrix[i]?.[j] ?? 0
         });
       }
     }
@@ -227,7 +227,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error in POST /api/test-embeddings:', error);
     return NextResponse.json(
-      { error: error.toString() },
+      { error: String(error) },
       { status: 500 }
     );
   }

@@ -5,6 +5,7 @@
 
 import { ExtractionMethod } from '../document-store';
 import { extractTextFromMultipleImages } from './ocr-extractor';
+import { getFileExtension } from '@/lib/utils/file-extension';
 
 export interface PDFExtractionResult {
   text: string;
@@ -41,9 +42,7 @@ export async function extractTextFromPDF(
     }
 
     // Try text extraction first
-    // Use dynamic import to avoid ESM/CommonJS issues
-    const pdfParse = await import('pdf-parse');
-    const pdfData = await pdfParse.default(buffer);
+    const pdfData = await parsePdfText(buffer);
 
     const hasText = pdfData.text && pdfData.text.trim().length > 100;
     const pageCount = pdfData.numpages || 0;
@@ -179,11 +178,19 @@ export function isPDFFile(fileName: string): boolean {
 }
 
 /**
- * Get file extension from filename
+ * Extract text from a PDF buffer using pdf-parse v2 (class-based API).
+ * Returns the concatenated text and the page count.
  */
-function getFileExtension(fileName: string): string {
-  const parts = fileName.split('.');
-  return parts.length > 1 ? `.${parts[parts.length - 1].toLowerCase()}` : '';
+async function parsePdfText(buffer: Buffer): Promise<{ text: string; numpages: number }> {
+  // Dynamic import keeps pdfjs out of the module graph until it is needed
+  const { PDFParse } = await import('pdf-parse');
+  const parser = new PDFParse({ data: new Uint8Array(buffer) });
+  try {
+    const result = await parser.getText();
+    return { text: result.text ?? '', numpages: result.total ?? 0 };
+  } finally {
+    await parser.destroy();
+  }
 }
 
 /**
@@ -197,9 +204,7 @@ export async function analyzePDFTextContent(buffer: Buffer): Promise<{
   estimatedTextPerPage: number;
 }> {
   try {
-    // Use dynamic import to avoid ESM/CommonJS issues
-    const pdfParse = await import('pdf-parse');
-    const pdfData = await pdfParse.default(buffer);
+    const pdfData = await parsePdfText(buffer);
     const textLength = pdfData.text?.length || 0;
     const pageCount = pdfData.numpages || 0;
     const estimatedTextPerPage = pageCount > 0 ? textLength / pageCount : 0;

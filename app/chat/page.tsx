@@ -280,7 +280,7 @@ export default function ChatPage() {
               msg.id === assistantMessage.id
                 ? {
                     ...msg,
-                    content: `Sorry, I encountered an error: ${errorMessage}`,
+                    content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : String(error)}`,
                     isTyping: false
                   }
                 : msg
@@ -306,7 +306,7 @@ export default function ChatPage() {
           msg.id === assistantMessage.id
             ? {
                 ...msg,
-                content: `Sorry, I encountered an error: ${errorMessage}`,
+                content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : String(error)}`,
                 isTyping: false
               }
             : msg

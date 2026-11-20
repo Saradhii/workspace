@@ -7,6 +7,7 @@ import { TextLoadingCard } from "./text-loading-card";
 import { TextResultCard } from "./text-result-card";
 import { TracingBeam } from "@/components/ui/tracing-beam";
 import { getUserSession, generateTextStream, getTextModels } from "@/lib/api";
+import type { TextUsage } from "@/types/api";
 import { Button } from "@/components/ui/button";
 import { FileText, MessageCircle, Download } from "lucide-react";
 import {
@@ -202,8 +203,7 @@ export default function TextCreation() {
         } else if (event.type === "usage") {
           // Capture token usage from the stream
           console.log("[STREAM] Usage data received:", event);
-          // Handle both formats: direct fields or nested usage object
-          const usageData = event.usage || event;
+          const usageData: Partial<TextUsage> = event.usage ?? {};
           setTokenUsage({
             prompt_tokens: usageData.prompt_tokens || 0,
             completion_tokens: usageData.completion_tokens || 0,
@@ -329,8 +329,7 @@ export default function TextCreation() {
         } else if (event.type === "usage") {
           // Capture token usage from the stream
           console.log("[STREAM] Suggestion usage data received:", event);
-          // Handle both formats: direct fields or nested usage object
-          const usageData = event.usage || event;
+          const usageData: Partial<TextUsage> = event.usage ?? {};
           setTokenUsage({
             prompt_tokens: usageData.prompt_tokens || 0,
             completion_tokens: usageData.completion_tokens || 0,

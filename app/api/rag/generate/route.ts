@@ -55,6 +55,12 @@ export async function POST(request: NextRequest) {
     });
 
     const queryEmbedding = embeddingResult.embeddings[0];
+    if (!queryEmbedding) {
+      return NextResponse.json(
+        { success: false, error: 'Failed to generate query embedding' },
+        { status: 500 }
+      );
+    }
     const embeddingTimeMs = Date.now() - startTime;
 
     console.log(`[RAG] Query embedded in ${embeddingTimeMs}ms`);
@@ -159,7 +165,7 @@ Answer:`;
     } catch (error) {
       console.error('[RAG] Error calling LLM:', error);
       // Fallback to extractive answer
-      answer = `Based on the retrieved information:\n\n${results[0].text}\n\n(Note: LLM generation failed, showing most relevant chunk)`;
+      answer = `Based on the retrieved information:\n\n${results[0]?.text ?? ''}\n\n(Note: LLM generation failed, showing most relevant chunk)`;
     }
 
     const generationTimeMs = Date.now() - llmStartTime;

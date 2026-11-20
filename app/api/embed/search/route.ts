@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate embedding for the query
-    const queryEmbedding = await provider.getEmbeddings({
+    const queryEmbedding = await provider.createEmbeddings({
       model,
       input: query,
     });
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Generate embeddings for all chunks
-      const chunkEmbeddings = await provider.getEmbeddings({
+      const chunkEmbeddings = await provider.createEmbeddings({
         model,
         input: chunks,
       });

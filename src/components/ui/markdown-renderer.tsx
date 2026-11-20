@@ -61,8 +61,11 @@ export function MarkdownRenderer({ content, className, isTyping }: MarkdownRende
             </p>
           ),
           // Inline code
-          code: ({ inline, className: codeClassName, children }) => {
-            if (inline) {
+          code: ({ className: codeClassName, children }) => {
+            // react-markdown v10 no longer passes `inline`; fenced blocks carry a
+            // language class or a trailing newline, inline code does not.
+            const isBlock = /language-/.test(codeClassName ?? '') || String(children).includes('\n');
+            if (!isBlock) {
               return (
                 <code className="bg-muted px-1 py-0.5 rounded text-xs font-mono">
                   {children}

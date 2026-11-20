@@ -4,6 +4,7 @@
  */
 
 import { ExtractionMethod } from '../document-store';
+import { getFileExtension } from '@/lib/utils/file-extension';
 
 export interface TextExtractionResult {
   text: string;
@@ -254,10 +255,3 @@ export function supportsDirectExtraction(fileType: string): boolean {
   return supportedTypes.includes(fileType.toLowerCase());
 }
 
-/**
- * Get file extension from filename
- */
-export function getFileExtension(fileName: string): string {
-  const parts = fileName.split('.');
-  return parts.length > 1 ? `.${parts[parts.length - 1].toLowerCase()}` : '';
-}

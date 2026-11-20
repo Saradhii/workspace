@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { HuggingFaceProvider } from '@/lib/ai/providers/huggingface-provider';
+import { cosineSimilarity } from '@/lib/utils/cosine-similarity';
 
 export async function GET() {
   console.log('🔍 Testing Hugging Face embedding models...\n');
 
   const testResults = {
     timestamp: new Date().toISOString(),
-    results: {},
-    errors: [],
+    results: {} as Record<string, any>,
+    errors: [] as string[],
     summary: {
       totalModels: 0,
       workingModels: 0,
@@ -37,7 +38,7 @@ export async function GET() {
     "Machine learning is a subset of AI",
     "The sky is blue during daytime",
     "Python is a popular programming language",
-  ];
+  ] as const;
 
   // Get available models
   try {
@@ -77,13 +78,13 @@ export async function GET() {
 
     try {
       // Test single embedding
-      const embeddingResponse = await provider.getEmbeddings({
+      const embeddingResponse = await provider.createEmbeddings({
         model: modelName,
         input: testTexts[0],
       });
 
       if (embeddingResponse.embeddings && embeddingResponse.embeddings.length > 0) {
-        const embedding = embeddingResponse.embeddings[0];
+        const embedding = embeddingResponse.embeddings[0] ?? [];
         modelResult.embeddingGenerated = true;
         modelResult.dimensions = embedding.length;
         modelResult.sampleValues = embedding.slice(0, 5).map(v => parseFloat(v.toFixed(6)));
@@ -96,7 +97,7 @@ export async function GET() {
       }
 
       // Test batch embeddings (2 texts)
-      const batchEmbeddings = await provider.getEmbeddings({
+      const batchEmbeddings = await provider.createEmbeddings({
         model: modelName,
         input: [testTexts[0], testTexts[1]],
       });
@@ -104,8 +105,8 @@ export async function GET() {
       if (batchEmbeddings.embeddings && batchEmbeddings.embeddings.length >= 2) {
         // Calculate similarity
         const similarity = cosineSimilarity(
-          batchEmbeddings.embeddings[0],
-          batchEmbeddings.embeddings[1]
+          batchEmbeddings.embeddings[0] ?? [],
+          batchEmbeddings.embeddings[1] ?? []
         );
 
         modelResult.similarityTest = {
@@ -161,7 +162,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate embeddings for all texts
-    const embeddings = await provider.getEmbeddings({
+    const embeddings = await provider.createEmbeddings({
       model,
       input: texts,
     });
@@ -172,7 +173,7 @@ export async function POST(request: NextRequest) {
       const row = [];
       for (let j = 0; j < texts.length; j++) {
         row.push(
-          parseFloat(cosineSimilarity(embeddings.embeddings[i], embeddings.embeddings[j]).toFixed(6))
+          parseFloat(cosineSimilarity(embeddings.embeddings[i] ?? [], embeddings.embeddings[j] ?? []).toFixed(6))
         );
       }
       similarityMatrix.push(row);
@@ -185,7 +186,7 @@ export async function POST(request: NextRequest) {
         similarPairs.push({
           text1: texts[i],
           text2: texts[j],
-          similarity: similarityMatrix[i][j]
+          similarity: similarityMatrix[i]?.[j] ?? 0
         });
       }
     }
@@ -206,7 +207,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error in POST /api/test-hf-embeddings:', error);
     return NextResponse.json(
-      { error: error.toString() },
+      { error: String(error) },
       { status: 500 }
     );
   }
@@ -222,30 +223,4 @@ function getModelDimensions(modelId: string): number {
     'mixedbread-ai/mxbai-embed-large-v1': 1024,
   };
   return dimensions[modelId] || 0;
-}
-
-// Helper function for cosine similarity
-function cosineSimilarity(vecA: number[], vecB: number[]): number {
-  if (vecA.length !== vecB.length) {
-    throw new Error('Vectors must be of same length');
-  }
-
-  let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
-
-  for (let i = 0; i < vecA.length; i++) {
-    dotProduct += vecA[i] * vecB[i];
-    normA += vecA[i] * vecA[i];
-    normB += vecB[i] * vecB[i];
-  }
-
-  normA = Math.sqrt(normA);
-  normB = Math.sqrt(normB);
-
-  if (normA === 0 || normB === 0) {
-    return 0;
-  }
-
-  return dotProduct / (normA * normB);
 }

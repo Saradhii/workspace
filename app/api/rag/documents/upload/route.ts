@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import documentStore, { RAGDocument, ExtractionMethod } from '@/lib/rag/document-store';
-import { extractText, supportsDirectExtraction, getFileExtension } from '@/lib/rag/extractors/text-extractor';
+import { extractText, supportsDirectExtraction } from '@/lib/rag/extractors/text-extractor';
+import { getFileExtension } from '@/lib/utils/file-extension';
 import { extractTextFromImage, isImageFile } from '@/lib/rag/extractors/ocr-extractor';
 import { extractTextFromPDF, isPDFFile } from '@/lib/rag/extractors/pdf-extractor';
 

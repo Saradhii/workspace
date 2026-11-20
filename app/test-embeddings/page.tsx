@@ -213,7 +213,7 @@ export default function EmbeddingTestPage() {
                                 <div>
                                   <span className="text-sm">Similarity test:</span>
                                   <div className="text-xs mt-1">
-                                    "{model.similarityTest.text1}" vs "{model.similarityTest.text2}"
+                                    &quot;{model.similarityTest.text1}&quot; vs &quot;{model.similarityTest.text2}&quot;
                                   </div>
                                   <Badge variant="outline" className="mt-1">
                                     Score: {model.similarityTest.score}
@@ -337,8 +337,8 @@ export default function EmbeddingTestPage() {
                         <CardContent className="p-3">
                           <div className="flex justify-between items-center">
                             <div className="flex-1">
-                              <p className="text-sm">"{pair.text1}"</p>
-                              <p className="text-sm">"{pair.text2}"</p>
+                              <p className="text-sm">&quot;{pair.text1}&quot;</p>
+                              <p className="text-sm">&quot;{pair.text2}&quot;</p>
                             </div>
                             <Badge variant={pair.similarity > 0.8 ? 'default' : 'secondary'}>
                               {pair.similarity.toFixed(3)}

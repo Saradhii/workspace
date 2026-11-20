@@ -59,6 +59,10 @@ export interface BaseStreamEvent {
 export interface BaseEmbeddingRequest {
   input: string | string[];
   model: string;
+  options?: {
+    use_cache?: boolean;
+    wait_for_model?: boolean;
+  };
 }
 
 export interface BaseEmbeddingResponse {

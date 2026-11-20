@@ -38,10 +38,11 @@ const parseContent = (content: string): ContentSegment[] => {
     }
 
     // Add code block
-    const language = match[1] || detectLanguage(match[2]);
+    const codeText = match[2] ?? '';
+    const language = match[1] || detectLanguage(codeText);
     segments.push({
       type: 'code',
-      content: match[2].trim(),
+      content: codeText.trim(),
       language
     });
 

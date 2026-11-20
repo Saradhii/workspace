@@ -155,7 +155,7 @@ function chunkBySentence(
   let index = 0;
 
   for (let i = 0; i < sentences.length; i++) {
-    const sentence = sentences[i];
+    const sentence = sentences[i] ?? '';
     const sentenceLength = sentence.length;
 
     // If adding this sentence would exceed chunk size
@@ -244,7 +244,7 @@ function chunkByParagraph(
 
       // Handle overlap: keep last paragraph
       if (chunkOverlap > 0 && currentChunk.length > 0) {
-        const lastParagraph = currentChunk[currentChunk.length - 1];
+        const lastParagraph = currentChunk[currentChunk.length - 1] ?? '';
         currentChunk = [lastParagraph];
         currentLength = lastParagraph.length;
         startChar = endChar - currentLength;
@@ -336,7 +336,7 @@ function getOverlapSentences(sentences: string[], overlapSize: number): string[]
 
   // Work backwards from the end
   for (let i = sentences.length - 1; i >= 0; i--) {
-    const sentence = sentences[i];
+    const sentence = sentences[i] ?? '';
     if (currentLength + sentence.length <= overlapSize) {
       overlap.unshift(sentence);
       currentLength += sentence.length + 1;

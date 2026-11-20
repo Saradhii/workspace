@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
-import { Loader2, CheckCircle, XCircle, Upload, Image, FileText, Settings, Eye } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, Upload, ImageIcon, FileText, Settings, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 interface OCRModel {
@@ -32,6 +32,8 @@ interface OCRResult {
   request_id?: string;
   error?: string;
   error_type?: string;
+  truncated?: boolean;
+  warning?: string;
 }
 
 interface ModelStatus {
@@ -276,7 +278,7 @@ export default function OCRTestPage() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <Image className="h-12 w-12 mx-auto text-muted-foreground" />
+                      <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground" />
                       <p className="text-sm text-muted-foreground">
                         Click or drag image here
                       </p>
@@ -313,7 +315,7 @@ export default function OCRTestPage() {
                     rows={3}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Example: "Convert this document to markdown:" or "Free OCR."
+                    Example: &quot;Convert this document to markdown:&quot; or &quot;Free OCR.&quot;
                   </p>
                 </div>
 
@@ -423,7 +425,7 @@ export default function OCRTestPage() {
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
                     <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Upload an image and click "Extract Text" to see results</p>
+                    <p>Upload an image and click &quot;Extract Text&quot; to see results</p>
                   </div>
                 )}
               </CardContent>

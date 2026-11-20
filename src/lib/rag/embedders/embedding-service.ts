@@ -148,7 +148,7 @@ class EmbeddingService {
 
       // Process each batch
       for (let i = 0; i < batches.length; i++) {
-        const batch = batches[i];
+        const batch = batches[i] ?? [];
         const batchNumber = i + 1;
 
         // Update progress

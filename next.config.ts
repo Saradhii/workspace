@@ -1,20 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   eslint: {
-    // Only run ESLint on src/ directory during production builds
+    // Lint src/ during production builds so regressions fail the build
     dirs: ['src'],
-    // Allow production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true, // Enable for deployment
   },
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
-    ignoreBuildErrors: true,
+    // Type errors fail the production build
+    ignoreBuildErrors: false,
+  },
+  experimental: {
+    // Tree-shake barrel imports from large icon / UI packages
+    optimizePackageImports: ['lucide-react', '@tabler/icons-react', 'radix-ui', '@lobehub/icons'],
   },
   turbopack: {
     // Specify the root directory to avoid lockfile conflicts

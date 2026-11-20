@@ -73,6 +73,12 @@ export async function POST(request: NextRequest) {
     });
 
     const queryEmbedding = embeddingResult.embeddings[0];
+    if (!queryEmbedding) {
+      return NextResponse.json(
+        { success: false, error: 'Failed to generate query embedding' },
+        { status: 500 }
+      );
+    }
     const embeddingTimeMs = Date.now() - startTime;
 
     console.log(`[Search] Query embedded in ${embeddingTimeMs}ms (${embeddingResult.dimensions}D)`);

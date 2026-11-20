@@ -6,6 +6,7 @@
 import { ExtractionMethod } from '../document-store';
 import { HuggingFaceProvider } from '@/lib/ai/providers/huggingface-provider';
 import { OCRGenerationRequest, OCRGenerationResponse } from '@/types/api';
+import { getFileExtension } from '@/lib/utils/file-extension';
 
 export interface OCRExtractionResult {
   text: string;
@@ -113,6 +114,7 @@ export async function extractTextFromMultipleImages(
     // Process each image
     for (let i = 0; i < imageBuffers.length; i++) {
       const buffer = imageBuffers[i];
+      if (!buffer) continue;
 
       // Report progress
       if (options.onProgress) {
@@ -206,14 +208,6 @@ function getMimeTypeFromFileName(fileName: string): string {
   };
 
   return mimeTypes[extension] || 'image/jpeg';
-}
-
-/**
- * Get file extension from filename
- */
-function getFileExtension(fileName: string): string {
-  const parts = fileName.split('.');
-  return parts.length > 1 ? `.${parts[parts.length - 1].toLowerCase()}` : '';
 }
 
 /**
